@@ -1,0 +1,1556 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@700;900&family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+<title>Autumn Fair 2026 — Volunteer Tracker</title>
+
+<!--
+  ============================================================
+  AUTUMN FAIR 2026 — VOLUNTEER TRACKER
+  ============================================================
+  Single file. No internet, no build step, no server.
+  Open it in Chrome. Edit it in any plain-text editor.
+
+  TO UPDATE IT: scroll to the TASK DATA block (search for
+  "const TASKS"). Add names to `owners`, set numbers on
+  `target`. Save, refresh the browser.
+
+  TO SHARE A SNAPSHOT: Cmd/Ctrl+P in Chrome, Save as PDF,
+  background graphics ON. Or just send this file.
+  ============================================================
+-->
+
+<style>
+
+
+:root{
+  --purple:#542D5C;
+  --purple-deep:#3B1F42;
+  --purple-soft:#7A5482;
+  --gold:#FCD23E;
+  --gold-deep:#E0AE12;
+  --paper:#F4EFE1;
+  --paper-2:#FBF8F1;
+  --rust:#B4562A;
+  --ink:#2A2230;
+  --ink-mid:#6B6273;
+  --line:#DED5C4;
+
+  --open:#B4562A;
+  --partial:#C08A16;
+  --filled:#3F7A4F;
+  --notarget:#7A5482;
+
+  --radius:3px;
+}
+
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+  font-family:'Montserrat',-apple-system,system-ui,sans-serif;
+  background:var(--paper);color:var(--ink);
+  font-size:14px;line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1320px;margin:0 auto;padding:0 24px 80px}
+
+h1,h2,h3{font-family:'Fraunces',Georgia,serif;font-weight:700;letter-spacing:-.01em;line-height:1.1}
+
+/* ---------------- masthead ---------------- */
+.mast{background:var(--purple);color:var(--paper);margin-bottom:26px;
+      border-bottom:5px solid var(--gold)}
+.mast .inner{max-width:1320px;margin:0 auto;padding:22px 24px 24px;
+             display:flex;align-items:flex-end;justify-content:space-between;gap:24px;flex-wrap:wrap}
+.mast .kicker{font-size:10px;font-weight:700;letter-spacing:.24em;text-transform:uppercase;color:var(--gold)}
+.mast h1{font-size:38px;color:var(--gold);margin-top:8px}
+.mast h1 span{color:var(--paper);font-weight:700;font-size:26px;display:block;letter-spacing:0}
+.countdown{text-align:right}
+.countdown .n{font-family:'Fraunces',Georgia,serif;font-size:44px;font-weight:900;color:var(--gold);line-height:1}
+.countdown .l{font-size:10px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;
+               color:rgba(244,239,225,.72);margin-top:4px}
+
+/* ---------------- thank-you line ---------------- */
+.thanks{
+  background:var(--paper-2);border:1px solid var(--line);border-radius:var(--radius);
+  padding:22px 26px;margin-bottom:22px;min-height:96px;
+  display:flex;align-items:center;
+}
+.thanks .line{
+  font-family:'Fraunces',Georgia,serif;font-weight:700;font-size:27px;line-height:1.22;
+  color:var(--ink);letter-spacing:-.01em;
+  opacity:1;transition:opacity .45s ease;
+}
+.thanks.fading .line{opacity:0}
+.thanks .who{color:var(--purple)}
+.thanks .what{color:var(--purple)}
+.thanks .ta{color:var(--rust)}
+@media (max-width:700px){ .thanks{padding:18px 18px;min-height:0} .thanks .line{font-size:21px} }
+
+/* ---------------- panels ---------------- */
+.panels{display:grid;grid-template-columns:1.1fr 1fr;gap:18px;margin-bottom:28px;align-items:start}
+@media (max-width:960px){.panels{grid-template-columns:1fr}}
+.panel{background:var(--paper-2);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden}
+.panel > h2{font-size:19px;color:var(--purple);padding:14px 18px 0}
+.panel > h2 .cnt{font-family:'Montserrat',sans-serif;font-size:11px;font-weight:600;
+  color:var(--ink-mid);letter-spacing:.02em;margin-left:6px}
+.panel .hint{font-size:11.5px;color:var(--ink-mid);padding:3px 18px 12px}
+.panel .body{padding:0 18px 16px}
+
+/* deadline list */
+.dl{border-top:1px solid var(--line);padding:11px 0}
+.dl:first-child{border-top:none}
+.dl .head{display:flex;align-items:baseline;gap:10px}
+.dl .date{font-family:'Fraunces',Georgia,serif;font-weight:700;font-size:16px;color:var(--purple);min-width:78px}
+.dl .away{font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;
+          padding:2px 7px;border-radius:20px;background:var(--line);color:var(--ink-mid)}
+.dl .away.soon{background:#F6E2B0;color:#7A5A00}
+.dl .away.now{background:#F3D6C8;color:#8C3D18}
+.dl ul{list-style:none;margin-top:7px}
+.dl li{position:relative;font-size:12.5px;padding:4px 0 4px 16px;color:var(--ink);min-height:20px}
+.dl li .act{color:var(--ink-mid)}
+.dot{width:8px;height:8px;border-radius:50%;flex:none}
+.dl li .dot{position:absolute;left:0;top:9px}
+.dot.open{background:var(--open)}
+.dot.partial{background:var(--partial)}
+.dot.filled{background:var(--filled)}
+.dot.notarget{background:var(--notarget)}
+
+/* gaps list */
+.gap{display:flex;justify-content:space-between;gap:12px;align-items:baseline;
+     padding:8px 0;border-top:1px solid var(--line);font-size:12.5px}
+.gap:first-child{border-top:none}
+.gap .n{font-weight:600}
+.gap .a{color:var(--ink-mid);font-size:11.5px}
+.gap .d{color:var(--rust);font-weight:700;font-size:11.5px;white-space:nowrap}
+
+/* grouped gap frames */
+.gframe{border:1px solid var(--line);border-radius:3px;background:#fff;margin-bottom:12px}
+.gframe:last-child{margin-bottom:0}
+.glab{font-size:9.5px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;
+  color:var(--purple);background:var(--paper);padding:7px 12px;border-bottom:1px solid var(--line)}
+.glab span{float:right;font-weight:600;letter-spacing:.04em;color:var(--ink-mid);text-transform:none;font-size:10px}
+.gbody{padding:0 12px}
+.gbody .gap:first-child{border-top:none}
+
+/* ---------------- controls ---------------- */
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+.search{flex:1;min-width:220px;position:relative}
+.search input{width:100%;padding:9px 12px;border:1px solid var(--line);border-radius:var(--radius);
+              font:inherit;font-size:13px;background:var(--paper-2);color:var(--ink)}
+.search input:focus{outline:2px solid var(--gold-deep);outline-offset:-1px}
+.btn{padding:9px 13px;border:1px solid var(--line);background:var(--paper-2);border-radius:var(--radius);
+     font:inherit;font-size:12px;font-weight:600;color:var(--ink);cursor:pointer}
+.btn:hover{border-color:var(--purple-soft)}
+.btn.on{background:var(--purple);color:var(--paper);border-color:var(--purple)}
+.count{font-size:12px;color:var(--ink-mid);margin-left:auto}
+
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;min-height:0}
+
+.quick{margin-bottom:12px}
+#quickTop{margin-bottom:24px}
+.qsum{font-size:11.5px;color:var(--ink-mid);margin-top:9px}
+.qsum b{color:var(--purple);font-weight:700}
+.qsum .qclear{font:inherit;font-size:11px;font-weight:600;color:var(--rust);
+  background:none;border:none;border-bottom:1px solid currentColor;
+  padding:0;margin-left:6px;cursor:pointer}
+.quickrow{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:7px}
+.quickrow:last-child{margin-bottom:0}
+.qchip{
+  font:inherit;font-size:11.5px;font-weight:600;letter-spacing:.01em;
+  padding:5px 12px;border-radius:20px;cursor:pointer;white-space:nowrap;
+  border:1px solid;background:transparent;transition:background .12s,color .12s;
+}
+.qchip.c1{color:var(--purple);border-color:#B9A3BE}
+.qchip.c1:hover{background:#EDE5EF}
+.qchip.c1.on{background:var(--purple);color:var(--paper);border-color:var(--purple)}
+.qchip.c2{color:var(--rust);border-color:#DFB39C}
+.qchip.c2:hover{background:#F7E7DE}
+.qchip.c2.on{background:var(--rust);color:var(--paper);border-color:var(--rust)}
+.qchip.c3{color:#2C5C39;border-color:#A8C6B0}
+.qchip.c3:hover{background:#E4EFE7}
+.qchip.c3.on{background:#3F7A4F;color:var(--paper);border-color:#3F7A4F}
+.chip{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:600;
+      background:var(--purple);color:var(--paper);padding:4px 8px;border-radius:20px}
+.chip b{font-weight:400;opacity:.7}
+.chip button{background:none;border:none;color:var(--paper);cursor:pointer;font-size:13px;line-height:1;padding:0}
+
+/* ---------------- controls ---------------- */
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+.search{flex:1;min-width:220px;position:relative}
+.search input{width:100%;padding:9px 12px;border:1px solid var(--line);border-radius:var(--radius);
+              font:inherit;font-size:13px;background:var(--paper-2);color:var(--ink)}
+.search input:focus{outline:2px solid var(--gold-deep);outline-offset:-1px}
+.btn{padding:9px 13px;border:1px solid var(--line);background:var(--paper-2);border-radius:var(--radius);
+     font:inherit;font-size:12px;font-weight:600;color:var(--ink);cursor:pointer}
+.btn:hover{border-color:var(--purple-soft)}
+.btn.on{background:var(--purple);color:var(--paper);border-color:var(--purple)}
+.count{font-size:12px;color:var(--ink-mid);margin-left:auto}
+
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;min-height:0}
+
+.quick{margin-bottom:12px}
+#quickTop{margin-bottom:24px}
+.qsum{font-size:11.5px;color:var(--ink-mid);margin-top:9px}
+.qsum b{color:var(--purple);font-weight:700}
+.qsum .qclear{font:inherit;font-size:11px;font-weight:600;color:var(--rust);
+  background:none;border:none;border-bottom:1px solid currentColor;
+  padding:0;margin-left:6px;cursor:pointer}
+.quickrow{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:7px}
+.quickrow:last-child{margin-bottom:0}
+.qchip{
+  font:inherit;font-size:11.5px;font-weight:600;letter-spacing:.01em;
+  padding:5px 12px;border-radius:20px;cursor:pointer;white-space:nowrap;
+  border:1px solid;background:transparent;transition:background .12s,color .12s;
+}
+.qchip.c1{color:var(--purple);border-color:#B9A3BE}
+.qchip.c1:hover{background:#EDE5EF}
+.qchip.c1.on{background:var(--purple);color:var(--paper);border-color:var(--purple)}
+.qchip.c2{color:var(--rust);border-color:#DFB39C}
+.qchip.c2:hover{background:#F7E7DE}
+.qchip.c2.on{background:var(--rust);color:var(--paper);border-color:var(--rust)}
+.qchip.c3{color:#2C5C39;border-color:#A8C6B0}
+.qchip.c3:hover{background:#E4EFE7}
+.qchip.c3.on{background:#3F7A4F;color:var(--paper);border-color:#3F7A4F}
+.chip{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:600;
+      background:var(--purple);color:var(--paper);padding:4px 8px;border-radius:20px}
+.chip b{font-weight:400;opacity:.7}
+.chip button{background:none;border:none;color:var(--paper);cursor:pointer;font-size:13px;line-height:1;padding:0}
+
+/* ---------------- table ---------------- */
+.tablewrap{border:1px solid var(--line);border-radius:var(--radius);overflow:visible;background:var(--paper-2)}
+table{width:100%;border-collapse:collapse}
+thead th{
+  background:var(--purple);color:var(--paper);text-align:left;
+  font-size:9.5px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;
+  padding:0;position:sticky;top:0;z-index:5;white-space:nowrap;
+}
+thead th .th{display:flex;align-items:center;gap:5px;padding:10px 12px}
+thead th .lab{cursor:pointer;user-select:none}
+thead th .lab:hover{color:var(--gold)}
+thead th .fbtn{background:none;border:none;color:rgba(244,239,225,.6);cursor:pointer;
+               font-size:11px;line-height:1;padding:2px 3px;border-radius:2px}
+thead th .fbtn:hover{color:var(--gold)}
+thead th .fbtn.active{color:var(--gold)}
+tbody td{border-top:1px solid var(--line);padding:9px 12px;font-size:12.5px;vertical-align:top}
+tbody tr:hover{background:#fff}
+tbody tr.expanded{background:#fff}
+td.task{font-weight:600;cursor:pointer}
+td.task .chev{color:var(--purple-soft);font-size:10px;margin-right:5px}
+td.act{color:var(--ink-mid);white-space:nowrap}
+td.when{white-space:nowrap}
+td.act small{display:block;font-size:10.5px;opacity:.75}
+td.due{white-space:nowrap;font-variant-numeric:tabular-nums}
+td.due .away{display:block;font-size:10px;color:var(--ink-mid)}
+td.due.urgent{color:var(--rust);font-weight:700}
+td.owners{color:var(--ink)}
+td.owners .none{color:var(--rust);font-weight:600}
+td.num{text-align:center;font-variant-numeric:tabular-nums;white-space:nowrap}
+.pill{display:inline-block;font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
+      padding:3px 8px;border-radius:20px;white-space:nowrap}
+.pill.open{background:#F3D6C8;color:#8C3D18}
+.pill.partial{background:#F6E2B0;color:#7A5A00}
+.pill.filled{background:#D5E6D8;color:#2C5C39}
+.pill.notarget{background:#E5DCE8;color:#4E2D57}
+.pill.todo{background:#E6E0D2;color:#6B6273}
+.pill.doing{background:#F6E2B0;color:#7A5A00}
+.pill.done{background:#D5E6D8;color:#2C5C39}
+.pill.blocked{background:#F3D6C8;color:#8C3D18}
+.pill.mixed{background:#E5DCE8;color:#4E2D57}
+tr.detail td{background:#fff;border-top:none;padding:0 12px 12px 34px;font-size:12.5px;color:var(--ink-mid)}
+tr.detail .d{max-width:820px;line-height:1.6}
+table.shifts{width:100%;border-collapse:collapse;margin-top:10px;max-width:820px}
+table.shifts td{padding:6px 12px 6px 0;font-size:12.5px;border-top:1px solid var(--line);vertical-align:middle}
+table.shifts tr:first-child td{border-top:none}
+table.shifts td.sh{font-weight:600;color:var(--purple);white-space:nowrap;width:220px}
+table.shifts td.num{text-align:left;width:70px}
+table.shifts td:last-child{width:90px}
+ul.dmeta{list-style:none;margin:9px 0 0;padding:0}
+ul.dmeta li{font-size:12.5px;color:var(--ink);padding:2px 0 2px 14px;position:relative}
+ul.dmeta li:before{content:'';position:absolute;left:0;top:9px;width:5px;height:5px;
+  border-radius:50%;background:var(--rust)}
+ul.dmeta b{color:var(--purple);font-weight:700;margin-right:6px}
+td.task .sub{font-weight:400;color:var(--ink-mid);font-size:11px}
+tr.detail .meta{margin-top:6px;font-size:11.5px;color:var(--purple-soft);font-weight:600}
+
+/* filter dropdown */
+.fmenu{position:absolute;z-index:50;background:#fff;border:1px solid var(--line);
+       border-radius:var(--radius);box-shadow:0 8px 26px rgba(42,34,48,.18);
+       padding:8px;min-width:200px;max-height:320px;overflow:auto}
+.fmenu label{display:flex;gap:8px;align-items:center;padding:5px 7px;font-size:12px;
+             text-transform:none;letter-spacing:0;font-weight:500;color:var(--ink);cursor:pointer;border-radius:2px}
+.fmenu label:hover{background:var(--paper)}
+.fmenu .tools{display:flex;gap:6px;padding:4px 5px 8px;border-bottom:1px solid var(--line);margin-bottom:5px}
+.fmenu .tools button{flex:1;font:inherit;font-size:11px;font-weight:600;text-transform:none;letter-spacing:0;
+                     padding:5px;border:1px solid var(--line);background:var(--paper);border-radius:2px;
+                     cursor:pointer;color:var(--ink)}
+
+.empty{padding:30px;text-align:center;color:var(--ink-mid);font-size:13px}
+
+/* edit affordances in the masthead */
+.mastright{text-align:right}
+.editbar{display:flex;align-items:center;justify-content:flex-end;gap:8px;margin-bottom:8px;min-height:26px}
+.savestate{font-size:10.5px;color:rgba(244,239,225,.7);text-decoration:none;
+  border-bottom:1px dotted rgba(244,239,225,.35);padding-bottom:1px}
+.savestate:hover{color:var(--gold);border-bottom-color:var(--gold)}
+.savestate:empty{border-bottom:none}
+
+.offline{display:none;background:#F3D6C8;color:#8C3D18;border:1px solid #E0B49E;border-radius:3px;
+  padding:9px 14px;font-size:12px;font-weight:600;margin-bottom:16px}
+.offline.show{display:block}
+
+.toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(14px);
+  background:var(--purple-deep);color:var(--paper);padding:10px 16px;border-radius:4px;
+  font-size:12.5px;opacity:0;pointer-events:none;transition:.2s;z-index:300;max-width:80vw}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.toast.err{background:var(--rust)}
+
+/* status column inside Due next */
+.dl li .sright{float:right;white-space:nowrap;text-align:right;margin-left:14px}
+.dl li .sright > *{display:inline-block;vertical-align:middle}
+.dl li .sright .spill{margin-left:9px}
+.dl li:after{content:'';display:block;clear:both}
+.snote{font-size:11px;color:var(--ink-mid);max-width:126px;overflow:hidden;text-overflow:ellipsis;
+  white-space:nowrap;text-align:right;vertical-align:middle}
+.snote:empty{display:none}
+.spill{display:inline-block;font-size:9.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
+  padding:3px 8px;border-radius:20px;min-width:82px;text-align:center}
+.spill.todo{background:#E6E0D2;color:#6B6273}
+.spill.doing{background:#F6E2B0;color:#7A5A00}
+.spill.done{background:#D5E6D8;color:#2C5C39}
+.spill.blocked{background:#F3D6C8;color:#8C3D18}
+
+
+/* help button on gap rows */
+.gap{align-items:center}
+.gap .right{display:flex;align-items:center;gap:10px;white-space:nowrap}
+.helpbtn{font:inherit;font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+  background:var(--purple);color:var(--paper);border:none;border-radius:20px;
+  padding:5px 11px;cursor:pointer;margin-left:10px}
+.helpbtn:hover{background:var(--purple-deep)}
+
+/* sign-up modal */
+.veil{position:fixed;inset:0;background:rgba(42,34,48,.55);z-index:200;
+  display:flex;align-items:center;justify-content:center;padding:20px}
+.modal{background:var(--paper-2);border-radius:4px;max-width:440px;width:100%;
+  box-shadow:0 20px 60px rgba(42,34,48,.4);overflow:hidden}
+.modal .top{background:var(--purple);color:var(--paper);padding:16px 20px}
+.modal .top .l{font-size:9.5px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--gold)}
+.modal .top h3{font-size:20px;margin-top:5px}
+.modal .top .sub{font-size:11.5px;color:rgba(244,239,225,.75);margin-top:3px}
+.modal .body{padding:18px 20px 20px}
+.modal label{display:block;font-size:10px;font-weight:700;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--ink-mid);margin-bottom:5px}
+.modal input,.modal textarea{width:100%;padding:9px 11px;border:1px solid var(--line);
+  border-radius:3px;font:inherit;font-size:13px;background:#fff;color:var(--ink);margin-bottom:13px}
+.modal textarea{min-height:64px;resize:vertical}
+.modal input:focus,.modal textarea:focus{outline:2px solid var(--gold-deep);outline-offset:-1px}
+.modal .hp{position:absolute;left:-9999px}
+.modal .row{display:flex;gap:10px;justify-content:flex-end;margin-top:4px}
+.modal .row button{font:inherit;font-size:12.5px;font-weight:600;padding:9px 16px;
+  border-radius:3px;cursor:pointer;border:1px solid var(--line);background:#fff;color:var(--ink)}
+.modal .row button.go{background:var(--purple);color:var(--paper);border-color:var(--purple)}
+.modal .row button[disabled]{opacity:.5;cursor:default}
+.modal .msg{font-size:12.5px;line-height:1.5;color:var(--ink);padding:4px 0 2px}
+.modal .msg.err{color:var(--rust)}
+.modal .ferr{font-size:11.5px;font-weight:600;color:var(--rust);margin:-9px 0 12px}
+.modal .ferr:empty{display:none}
+.modal input.bad{border-color:var(--rust);outline-color:var(--rust)}
+.modal .note{font-size:11px;color:var(--ink-mid);margin-top:10px;line-height:1.45}
+
+.progress{margin-top:26px}
+.ptab{width:100%;border-collapse:collapse}
+.ptab th,.ptab td{text-align:left;vertical-align:middle;padding:9px 0}
+.ptab .cw{width:26%;padding-right:16px}
+.ptab .cc{width:24.6%;padding-right:14px}
+.ptab .cc:last-child{padding-right:0}
+
+.phead th{
+  font-size:9.5px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--ink-mid);padding-bottom:4px;border-bottom:1px solid var(--line);
+}
+.prow td{border-top:1px solid var(--line)}
+.prow .plab{font-size:13px;font-weight:600;color:var(--ink)}
+.clab{display:none;font-size:9.5px;font-weight:700;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--ink-mid);margin-bottom:3px}
+.pnum{font-size:11px;color:var(--ink-mid);margin-bottom:4px;font-variant-numeric:tabular-nums}
+.pnum b{color:var(--purple);font-weight:700}
+.pbar{height:8px;border-radius:5px;background:var(--line);overflow:hidden}
+.pbar i{display:block;height:100%;border-radius:5px;background:var(--purple)}
+.prow.p1 .pbar i{background:var(--purple)}
+.prow.p3 .pbar i{background:#3F7A4F}
+.pcell.none .pnum{color:var(--purple-soft)}
+
+.prow.total td{border-top:none;padding-bottom:14px}
+.prow.total .plab{font-family:'Fraunces',Georgia,serif;font-weight:700;font-size:21px;
+  color:var(--purple);letter-spacing:-.01em}
+.prow.total .pnum{font-size:12px}
+.prow.total .pbar{height:13px;border-radius:7px}
+
+/* the two single-bar rows at the end */
+.dayrow{padding:11px 0;border-top:1px solid var(--line)}
+.dayrow .ptop{display:flex;justify-content:space-between;align-items:baseline;gap:14px;margin-bottom:6px}
+.dayrow .plab{font-size:13px;font-weight:600;color:var(--ink)}
+.dayrow .pnum{margin:0;white-space:nowrap}
+.dayrow .pbar i{background:var(--rust)}
+.dayspacer{height:10px}
+
+@media (max-width:700px){
+  .ptab,.ptab tbody,.ptab tr,.ptab td{display:block;width:auto}
+  .ptab .phead{display:none}
+  .prow td{border-top:none;padding:5px 0}
+  .prow td.plab{border-top:1px solid var(--line);padding-top:12px}
+  .clab{display:block}
+}
+
+footer{margin-top:26px;font-size:11.5px;color:var(--ink-mid);display:flex;
+       justify-content:space-between;gap:16px;flex-wrap:wrap}
+
+@media print{
+  body{background:#fff}
+  .toolbar,.chips,thead th .fbtn{display:none}
+  .tablewrap{border-color:#ccc}
+  tr.detail{display:none}
+}
+</style>
+</head>
+<body>
+
+<div class="mast">
+  <div class="inner">
+    <div>
+      <div class="kicker">Emerson Waldorf School &middot; Parent Teacher Collaborative</div>
+      <h1>Autumn Fair 2026<span>Volunteer Tracker</span></h1>
+    </div>
+    <div class="mastright">
+      <div class="editbar"><a class="savestate" id="savestate" href="https://docs.google.com/spreadsheets/d/1GKpv9R0Asfq-I2P3i_ySqT7BCFShI7n7Oz3Wz2l95qg/edit?usp=sharing" target="_blank" rel="noopener" title="Open the Google Sheet this page reads from"></a></div>
+      <div class="countdown">
+        <div class="n" id="cd">—</div>
+        <div class="l">days to Nov 7</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <div class="offline" id="offline">Couldn't reach the sheet — showing the last saved snapshot, which may be out of date.</div>
+
+  <div class="thanks" id="thanks" hidden></div>
+
+  <div class="quick" id="quickTop"></div>
+
+  <div class="panels">
+    <div class="panel">
+      <h2>Still needs people <span class="cnt" id="gapcount"></span></h2>
+      <div class="hint">Anything not yet at full strength, grouped by activity. A task drops off this list once it has everyone it needs.</div>
+      <div class="body" id="gaps"></div>
+    </div>
+    <div class="panel">
+      <h2>Due next</h2>
+      <div class="hint">Every deadline still ahead of us, nearest first. Click a date to filter the page to it. The dot on the left is how many people have signed up; the label on the right is how the work is going.</div>
+      <div class="body" id="deadlines"></div>
+    </div>
+  </div>
+
+  <div class="toolbar">
+    <div class="search"><input id="q" type="search" placeholder="Search tasks, activities, names, details…"></div>
+    <button class="btn" id="fOpen">Only unfilled</button>
+    <button class="btn" id="fNoTarget">Only missing a target</button>
+    <button class="btn" id="fClear">Clear filters</button>
+    <button class="btn" id="fCsv">Export CSV</button>
+    <span class="count" id="count"></span>
+  </div>
+
+  <div class="quick" id="quick"></div>
+
+  <div class="chips" id="chips"></div>
+
+  <div class="tablewrap">
+    <table id="tbl">
+      <thead><tr id="thead"></tr></thead>
+      <tbody id="tbody"></tbody>
+    </table>
+    <div class="empty" id="empty" style="display:none">Nothing matches those filters.</div>
+  </div>
+
+  <div class="panel progress" id="progresswrap">
+    <h2>Where we stand</h2>
+    <div class="hint">Slots filled against slots needed, for the whole Fair and for each group. Jobs with no headcount set yet aren't counted here.</div>
+    <div class="body" id="progress"></div>
+  </div>
+
+  <footer>
+    <span>Status is derived: <b>Filled</b> means names &ge; target &middot; <b>Partial</b> means some names, short of target &middot; <b>Open</b> means nobody yet &middot; <b>No target</b> means the task has names but no number to measure against.</span>
+    <span id="stamp"></span>
+  </footer>
+</div>
+
+<script>
+/* ============================================================
+   SNAPSHOT — fallback only.
+   ============================================================
+   The page reads its data from the Google Sheet. This list is a
+   frozen copy, used only when the sheet can't be reached (script
+   down, no internet, deployment mid-update). When it's in use the
+   page says so in an amber banner.
+
+   It will drift out of date, and that's fine. If you want to
+   refresh it, export the Tasks tab and ask for a rebuild — but
+   nothing breaks if you never do.
+
+   Do not edit this to update the tracker. Edit the sheet.
+   ============================================================ */
+
+const FAIR_DATE = "2026-11-07";
+
+/* PUBLIC-REPO NOTE: this snapshot has had every volunteer name and
+   personal name removed. The live page still shows names, which it
+   reads at runtime from the sheet; none are stored in this file. */
+
+let TASKS = [
+
+/* ---------- Grades 1+2 — Fish Pond ---------- */
+{act:"Fish Pond", grade:"Grades 1+2", task:"Inventory the bin",
+ detail:"Open the Fish Pond bin, count what's there against the guide's list, and send us the numbers so we don't buy what we already own.",
+ time:"1 hour", due:"2026-09-15", target:2,
+ owners:[]},
+{act:"Fish Pond", grade:"Grades 1+2", task:"Shop for and wrap prizes",
+ detail:"The guide calls for roughly 1,000 small treasures. Two people splitting the shopping and wrapping, reimbursed with receipts.",
+ time:"2 evenings across Sept–Oct", due:"2026-10-24", target:2, owners:[]},
+{act:"Fish Pond", grade:"Grades 1+2", task:"Classroom setup",
+ detail:"Move all desks, set up pond + bridge, lay out supplies.",
+ time:"2 hours", due:"2026-11-06", target:4, owners:[]},
+{act:"Fish Pond", grade:"Grades 1+2", task:"Nov 7 shifts",
+ detail:"90-minute shifts alongside someone who's done it before. Six shifts total: setup 10:00–11:30, then 11:30–1:00, 1:00–2:30, 2:30–4:00, breakdown 4:00–5:00.",
+ time:"90 min each", due:"2026-11-07", target:8, owners:[]},
+
+/* ---------- Grades 3+4 — Gnome Hats ---------- */
+{act:"Gnome Hats", grade:"Grades 3+4", task:"Read the 2024 inventory",
+ detail:"Open the post-fair inventory spreadsheet and tell us how many finished hats and how much felt and trim we already own.",
+ time:"1 hour", due:"2026-09-15", target:1, owners:[]},
+{act:"Gnome Hats", grade:"Grades 3+4", task:"Sewing evenings",
+ detail:"Two evenings in the handwork room, cutting and sewing hats together. No sewing experience needed — someone will show you. This exists so one person isn't sewing alone for six weeks.",
+ time:"2 hrs × 2 evenings", due:null, target:null,
+ owners:[]},
+{act:"Gnome Hats", grade:"Grades 3+4", task:"Buy the supplies",
+ detail:"One shopping trip once we know what's missing, reimbursed with receipts.",
+ time:"2 hours", due:"2026-10-17", target:1, owners:[]},
+{act:"Gnome Hats", grade:"Grades 3+4", task:"Classroom setup",
+ detail:"Move all desks, set up craft tables, lay out supplies.",
+ time:"2 hours", due:"2026-11-06", target:4, owners:[]},
+{act:"Gnome Hats", grade:"Grades 3+4", task:"Nov 7 shifts",
+ detail:"90-minute shifts helping kids make hats.",
+ time:"90 min each", due:"2026-11-07", target:8, owners:[]},
+
+/* ---------- Grades 5+6 — Gem Mining ---------- */
+{act:"Gem Mining", grade:"Grades 5+6", task:"Write the instructions",
+ detail:"There are no written instructions for gem mining anywhere. Sit with whoever ran it previously, ask how they did it, and write it up.",
+ time:"90-min convo + 1 hr writing", due:"2026-09-30", target:1, owners:[]},
+{act:"Gem Mining", grade:"Grades 5+6", task:"Order or make the geodes",
+ detail:"Roughly 400. Check inventory first. Cost is about $0.25 each if made, $1–3 if bought. Either order them delivered to school, or buy materials and host 1–2 afterschool sessions with students to make them.",
+ time:"1 hour, or 3–4 hours", due:"2026-10-10", target:1, owners:[]},
+{act:"Gem Mining", grade:"Grades 5+6", task:"Classroom setup",
+ detail:"Best with a small crew — kids love to help with this one. Move all desks.",
+ time:"30 min", due:"2026-11-06", target:4, owners:[]},
+{act:"Gem Mining", grade:"Grades 5+6", task:"Nov 7 shifts",
+ detail:"90-minute shifts. Setup is quick with a good crew.",
+ time:"90 min each", due:"2026-11-07", target:8, owners:[]},
+
+/* ---------- Grades 7+8 — Candle Dipping ---------- */
+{act:"Candle Dipping", grade:"Grades 7+8", task:"Buy beeswax + wicking",
+ detail:"Supply list is in the existing coordinator guide. Check what materials remain in storage first.",
+ time:"1 hour", due:"2026-10-17", target:1, owners:[]},
+{act:"Candle Dipping", grade:"Grades 7+8", task:"Gather the supplies",
+ detail:"Most should be in the PTC container. Crock pots of wax are in the PTC shed.",
+ time:"20 min", due:"2026-11-06", target:1, owners:[]},
+{act:"Candle Dipping", grade:"Grades 7+8", task:"Classroom setup",
+ detail:"This one is big — clear the classroom (or do this outside), lay down paper and tarps. Probably needs a couple of people.",
+ time:"2 hours", due:"2026-11-06", target:4, owners:[]},
+{act:"Candle Dipping", grade:"Grades 7+8", task:"Nov 7 shifts",
+ detail:"90-minute shifts. Heaviest setup and breakdown of the four activities — extra hands especially welcome at the ends.",
+ time:"90 min each", due:"2026-11-07", target:8, owners:[]},
+
+/* ---------- Games on the Field ---------- */
+{act:"Games on the Field", grade:"New this year", task:"Borrow the lawn games",
+ detail:"There's a family in the school business directory that owns lawn game equipment. Find them, call them, ask, and arrange pickup.",
+ time:"~1 hour of calls", due:"2026-10-01", target:1, owners:[]},
+{act:"Games on the Field", grade:"New this year", task:"Write descriptions + schedule",
+ detail:"Six or so short paragraphs describing each game, plus scheduling events of note, for the website and printed materials. Kitchen-table job.",
+ time:"1 hour", due:"2026-10-01", target:1, owners:[]},
+{act:"Games on the Field", grade:"New this year", task:"Organize the tug-of-war",
+ detail:"Teacher-vs-parent tug-of-war. Recruit ten teachers and ten parents and pick a time. Mostly just asking people.",
+ time:"~1 hour of asking", due:"2026-10-25", target:1, owners:[]},
+{act:"Games on the Field", grade:"New this year", task:"Nov 7 shifts",
+ detail:"Keeping games organized and equipment where it belongs. 90-minute shifts, four shifts.",
+ time:"90 min each", due:"2026-11-07", target:8, owners:[]},
+
+/* ---------- Grill ---------- */
+{act:"Grill", grade:"Run by the High School", task:"Food planning session",
+ detail:"One meeting with the grill lead and a professional chef to settle the menu, quantities and equipment. Useful if you know food, restaurants, or feeding crowds.",
+ time:"one 90-min meeting", due:"2026-09-15", target:1, owners:[]},
+{act:"Grill", grade:"Run by the High School", task:"Chase food donations",
+ detail:"Once the menu is set we'll know what we need. Coordinate with the High School on what help they need, then ask local businesses and school families to donate ingredients.",
+ time:"~3 hours across Oct", due:"2026-10-24", target:1, owners:[]},
+{act:"Grill", grade:"Run by the High School", task:"Friday grill setup",
+ detail:"Two adults. Hauling and assembling. High School helpers will be there too.",
+ time:"2 hours", due:"2026-11-06", target:2, owners:[]},
+{act:"Grill", grade:"Run by the High School", task:"Saturday grill breakdown",
+ detail:"Two adults, 4:00–5:00 PM. Cleaning and packing up.",
+ time:"1 hour", due:"2026-11-07", target:2, owners:[]},
+{act:"Grill", grade:"Run by the High School", task:"Nov 7 shifts",
+ detail:"Selling food, restocking, managing the line, alongside high school students. Roughly hourly shifts from 10:30 to 4:00.",
+ time:"1 hour each", due:"2026-11-07", target:8, owners:[]},
+
+/* ---------- Cafe ---------- */
+{act:"Cafe", grade:"All donated, all profit", task:"Bake two dozen of something",
+ detail:"Label it with ingredients and allergens. Drop off Friday afternoon or Saturday morning. No meetings, no shifts, no follow-up.",
+ time:"your own kitchen", due:"2026-11-06", target:null,
+ owners:[]},
+{act:"Cafe", grade:"All donated, all profit", task:"Drop-off table",
+ detail:"Receive, label-check and organize baked goods as they arrive Saturday morning. There's a 2024 guide covering labeling and allergens.",
+ time:"2 hours, Sat morning", due:"2026-11-07", target:2, owners:[]},
+{act:"Cafe", grade:"All donated, all profit", task:"Nov 7 shifts",
+ detail:"Selling at the stall. 90-minute shifts. Requires nothing but the ability to make change.",
+ time:"90 min each", due:"2026-11-07", target:8, owners:[]},
+
+/* ---------- Decorations + Campus ---------- */
+{act:"Decorations + Campus", grade:"“It has to feel magical”", task:"Make the donation calls",
+ detail:"We already have relationships with donors for pumpkins, mums and hay bales. This is calling people who have said yes before, not cold outreach.",
+ time:"3 calls, ~1 hour", due:"2026-10-15", target:1, owners:[]},
+{act:"Decorations + Campus", grade:"“It has to feel magical”", task:"Friday decorating",
+ detail:"Hauling and placing hay bales, pumpkins and mums. Physical work. Two shifts: 12:30–3:00 and 3:00–5:00.",
+ time:"2.5 hours", due:"2026-11-06", target:null, owners:[]},
+{act:"Decorations + Campus", grade:"“It has to feel magical”", task:"Bring a leaf blower",
+ detail:"Friday morning, clearing the paths. Bring your own blower; work alongside two or three others.",
+ time:"90 min", due:"2026-11-06", target:3, owners:[]},
+{act:"Decorations + Campus", grade:"“It has to feel magical”", task:"Saturday takedown",
+ detail:"4:00–6:00 PM. Everything back where it belongs so Monday isn't a mess.",
+ time:"2 hours", due:"2026-11-07", target:null, owners:[]},
+
+/* ---------- Parking + Shuttles ---------- */
+{act:"Parking + Shuttles", grade:"Written instructions exist", task:"Drive the shuttle",
+ detail:"Between the Eubanks Park & Ride and campus. Two shifts: 9:45–1:15 and 1:15–4:30. Needs a valid driver's license and nothing else.",
+ time:"3.5 hours", due:"2026-11-07", target:2, owners:[]},
+{act:"Parking + Shuttles", grade:"Written instructions exist", task:"Set up the pop-up tent",
+ detail:"At the Park & Ride, so it's clear where people are going.",
+ time:"20 min", due:"2026-11-07", target:1, owners:[]},
+{act:"Parking + Shuttles", grade:"Written instructions exist", task:"Direct parking",
+ detail:"Stand at New Jericho Rd & Millhouse Rd, send permitted cars onto campus and everyone else to the Park & Ride. Outdoors — dress for it. Four shifts: 10:30–12:00, 12:00–1:30, 1:30–3:00, 3:00–4:00.",
+ time:"90 min each", due:"2026-11-07", target:4, owners:[]},
+{act:"Parking + Shuttles", grade:"Written instructions exist", task:"Deliver the neighbor letter",
+ detail:"Letting nearby residents know about the traffic. The letter already exists; this is printing and delivering it.",
+ time:"2 hours", due:"2026-10-31", target:1, owners:[]},
+
+/* ---------- Hayride ---------- */
+{act:"Hayride", grade:"Horse-drawn, pending", task:"Nov 7 shifts",
+ detail:"Manage the hayride line — keeping the queue orderly and safe, loading and unloading. 90-minute shifts. Contingent on Blue Skies at Maple View Farm; backup is the tractor ride, or nothing.",
+ time:"90 min each", due:"2026-11-07", target:8, owners:[]},
+
+/* ---------- Runners + Floaters ---------- */
+{act:"Runners + Floaters", grade:"Start here if unsure", task:"Float",
+ detail:"Emptying compost and trash, water for a musician, running supplies to a table that's short. No preparation, no expertise, no station to learn. If you want to help and don't know where to start, start here. Three shifts: 11:00–12:30, 12:15–1:45, 1:30–3:00.",
+ time:"90 min each", due:"2026-11-07", target:3, owners:[]},
+
+/* ---------- EC Puppet Show ---------- */
+{act:"EC Puppet Show", grade:"Early Childhood", task:"Ask EC teachers what would help",
+ detail:"Two conversations, then report back. We know this is hard to run; we don't know exactly which part. One thing we already suspect: friction and confusion around EC Assistants being compensated for prep, practice and performance time.",
+ time:"~1 hour", due:"2026-09-20", target:1, owners:[]},
+{act:"EC Puppet Show", grade:"Early Childhood", task:"Nov 7 shifts",
+ detail:"Running the ticket table. 90-minute shifts.",
+ time:"90 min each", due:"2026-11-07", target:8, owners:[]},
+
+/* ---------- HS Art Gallery ---------- */
+{act:"HS Art Gallery", grade:"Student work", task:"Talk to the HS art teacher",
+ detail:"One conversation with the art teacher about which student work gets displayed and what the gallery needs.",
+ time:"1 conversation", due:"2026-09-20", target:1, owners:[]},
+{act:"HS Art Gallery", grade:"Student work", task:"Nov 7 shifts",
+ detail:"Welcoming visitors, keeping an eye on the work, showing main lesson books. Quiet indoor job — good if you'd rather not be on your feet outside.",
+ time:"90 min each", due:"2026-11-07", target:8, owners:[]},
+
+/* ---------- Music ---------- */
+{act:"Music", grade:"Recruiting in Sept", task:"Post the musician call",
+ detail:"Post on ParentSquare and follow up. Check in-house first — ask the music teachers, and find out whether any high schoolers are in bands.",
+ time:"~2 hours across Sept", due:"2026-09-30", target:1, owners:[]},
+{act:"Music", grade:"Recruiting in Sept", task:"Nov 7 shifts",
+ detail:"Looking after the musicians. Water, a place to put cases, knowing when they're on.",
+ time:"90 min each", due:"2026-11-07", target:8, owners:[]},
+
+/* ---------- Internal Vendors ---------- */
+{act:"Internal Vendors", grade:"No outside vendors", task:"Send the interest survey",
+ detail:"Find out who inside the school community actually wants a table. A reusable announcement template already exists. Draft the invite and send to the school office + PTC for approval.",
+ time:"1 hour", due:"2026-09-10", target:1, owners:[]},
+{act:"Internal Vendors", grade:"No outside vendors", task:"Assign tables",
+ detail:"Field the replies, answer questions, keep a list, sort out who goes where.",
+ time:"~2 hours across Oct", due:"2026-10-24", target:1, owners:[]},
+
+/* ---------- Friday Setup Day ---------- */
+{act:"Friday Setup Day", grade:"Nov 6", task:"Friday afternoon setup crew",
+ detail:"Moving tables and chairs, getting campus ready. Two shifts: 12:30–3:00 and 3:00–5:00. Historically leaned heavily on high schoolers getting a half day — adults make a real difference here.",
+ time:"2.5 hours", due:"2026-11-06", target:null,
+ owners:[]},
+
+/* ---------- Behind the scenes ---------- */
+{act:"Behind the Scenes", grade:"Small, unglamorous, needed", task:"Station WhatsApp groups",
+ detail:"One group per station for day-of communication. Last year people couldn't reach anyone when they ran out of supplies.",
+ time:"2 hours", due:"2026-10-31", target:1, owners:[]},
+{act:"Behind the Scenes", grade:"Small, unglamorous, needed", task:"Get the Fair on the website",
+ detail:"Work with the school's web lead on the Autumn Fair page — possibly a homepage popup.",
+ time:"~2 hours", due:"2026-10-10", target:1, owners:[]},
+{act:"Behind the Scenes", grade:"Small, unglamorous, needed", task:"Count the storage container",
+ detail:"Inventory what's in the container from outside the unit, so we know what we already own before buying anything.",
+ time:"2 hours", due:"2026-09-30", target:1, owners:[]},
+
+/* ---------- Pop-up Activities ---------- */
+{act:"Pop-ups", grade:"Family-run", task:"Giant bubble wands",
+ detail:"A family volunteer can mostly handle this but will need a spot to set up, with access to water. This task is coordinating with them to make sure their needs are met.",
+ time:"2 hours", due:"2026-10-07", target:1, owners:[]},
+{act:"Pop-ups", grade:"Family-run", task:"Blacksmithing demo",
+ detail:"Likely bound to one spot. Find out from the smith where that spot is and what he needs.",
+ time:"~1 hour", due:"2026-10-07", target:1, owners:[]},
+
+];
+
+
+/* ============================================================
+   Everything below is the app. You shouldn't need to touch it.
+   ============================================================ */
+
+/* ============================================================
+   SIGN-UP BUTTON SETUP
+   ============================================================
+   Paste your Apps Script web-app URL between the quotes below.
+   Setup instructions are in the companion file
+   "signup-endpoint-setup.md".
+
+   Leave it empty and the button still works — it falls back to
+   opening the person's mail client with the message pre-filled.
+   ============================================================ */
+/* ============================================================
+   WHERE THE DATA COMES FROM
+   ============================================================
+   Everything on this page is read from the Google Sheet, through
+   the Apps Script web app below. To change anything — owners,
+   targets, statuses, notes, dates, even the task list — edit the
+   sheet. This file does not need to be touched.
+
+   The task list further down is a snapshot, used only if the
+   sheet can't be reached. It will go stale; that's expected.
+   ============================================================ */
+const DATA_ENDPOINT = "https://script.google.com/macros/s/AKfycbyopqEYHfSwS9Nss9zXOVyo-PGYBSLmsRF41wMg36Soy6zygYpvjM8Vhie3zzHOd1CpRg/exec";
+
+const SIGNUP_ENDPOINT = DATA_ENDPOINT;   // same web app handles both
+const SIGNUP_EMAIL    = "PTC@emersonwaldorf.org";
+
+if(!NodeList.prototype.forEach) NodeList.prototype.forEach = Array.prototype.forEach;
+
+const MS_DAY = 86400000;
+const today = new Date(); today.setHours(0,0,0,0);
+
+function parseDate(s){ if(!s) return null; const [y,m,d]=s.split('-').map(Number); return new Date(y,m-1,d); }
+function daysAway(s){ const d=parseDate(s); return d===null?null:Math.round((d-today)/MS_DAY); }
+function fmtDate(s){
+  if(!s) return 'No date';
+  const d=parseDate(s);
+  return d.toLocaleDateString('en-US',{month:'short',day:'numeric'});
+}
+function awayLabel(n){
+  if(n===null) return '';
+  if(n<0) return Math.abs(n)+'d ago';
+  if(n===0) return 'today';
+  if(n===1) return 'tomorrow';
+  return 'in '+n+' days';
+}
+
+function statusOf(t){
+  const n=t.owners.length;
+  if(t.target===null) return n>0 ? 'notarget' : 'open';
+  if(n===0) return 'open';
+  return n>=t.target ? 'filled' : 'partial';
+}
+const STATUS_LABEL={open:'Open',partial:'Partial',filled:'Filled',notarget:'No target'};
+
+function windowOf(t){
+  if(t.due==='2026-11-07') return 'Sat Nov 7';
+  if(t.due==='2026-11-06') return 'Fri Nov 6';
+  return 'Before';
+}
+
+
+
+/* ---------------- filter state ---------------- */
+/* Filterable fields live here, not on the columns, so a field can be
+   filtered without occupying a column. "When" is filtered by the day
+   chips but no longer has a column of its own. */
+const FILTER_DEF={
+  status : {label:'Status',       value:t=>t.status},
+  act    : {label:'Activity',     value:t=>t.act},
+  _window: {label:'When',         value:t=>t._window},
+  _status: {label:'Availability', value:t=>STATUS_LABEL[t._status]},
+};
+
+const SHEET_STATUS_ORDER={'Blocked':0,'To do':1,'In progress':2,'Done':3};
+
+const COLUMNS=[
+  {key:'status', label:'Status',       filter:true,  sort:t=>SHEET_STATUS_ORDER[t.status]},
+  {key:'act',    label:'Activity',     filter:true,  sort:t=>t.act},
+  {key:'task',   label:'Task',         filter:false, sort:t=>t.task},
+  {key:'due',    label:'Due',          filter:false, sort:t=>t.due||'9999'},
+  {key:'_status',label:'Availability', filter:true,  sort:t=>t._status},
+  {key:'_slots', label:'Of',           filter:false, sort:t=>t.target===null?-1:t.owners.length/t.target},
+];
+
+const state={ q:'', sort:'due', dir:1, only:null, filters:{}, _date:null, expanded:new Set() };
+
+function distinct(key){
+  const def=FILTER_DEF[key];
+  const s=new Set();
+  TASKS.forEach(t=>{ const v=def.value(t); (Array.isArray(v)?v:[v]).forEach(x=>s.add(x)); });
+  const out=[...s];
+  return key==='status'
+    ? out.sort((a,b)=>(SHEET_STATUS_ORDER[a]||9)-(SHEET_STATUS_ORDER[b]||9))
+    : out.sort((a,b)=>a.localeCompare(b));
+}
+
+function passes(t){
+  if(state.only==='open' && (t._status==='filled')) return false;
+  if(state.only==='notarget' && t.target!==null) return false;
+  for(const k in state.filters){
+    const sel=state.filters[k]; if(!sel || !sel.size) continue;
+    const def=FILTER_DEF[k]; if(!def) continue;
+    const v=def.value(t); const vals=Array.isArray(v)?v:[v];
+    if(!vals.some(x=>sel.has(x))) return false;
+  }
+  if(state.q){
+    const hay=(t.task+' '+t.act+' '+t.grade+' '+t.detail+' '+t.time+' '+t.owners.join(' ')).toLowerCase();
+    if(!hay.includes(state.q.toLowerCase())) return false;
+  }
+  return true;
+}
+
+function filtered(){
+  let rows=TASKS.filter(passes);
+  if(state._date) rows=rows.filter(t=>t.due===state._date);
+  return rows;
+}
+
+function anyFilter(){
+  return !!(state.q || state.only || state._date || Object.keys(state.filters).length);
+}
+
+function visible(){
+  const col=COLUMNS.find(c=>c.key===state.sort)||COLUMNS.find(c=>c.key==='due');
+  return filtered().sort((a,b)=>{
+    const x=col.sort(a), y=col.sort(b);
+    if(x<y) return -1*state.dir; if(x>y) return 1*state.dir;
+    return (a.due||'9999').localeCompare(b.due||'9999');
+  });
+}
+
+/* ---------------- data from the sheet ---------------- */
+const STATUS_CLS={'To do':'todo','In progress':'doing','Done':'done','Blocked':'blocked'};
+/* Tolerate case and spacing from the sheet, so a stray "blocked"
+   still renders as Blocked rather than silently becoming To do. */
+function canonStatus(v){
+  const raw=String(v==null?'':v).trim().toLowerCase();
+  const hit=Object.keys(STATUS_CLS).find(k=>k.toLowerCase()===raw);
+  return hit||'To do';
+}
+let FAIR_DATE_LIVE=FAIR_DATE;
+
+function normalise(list){
+  return list.map((t,i)=>{
+    const x=Object.assign({},t);
+    x.owners = x.owners||[];
+    x.status = canonStatus(x.status);
+    x.note   = x.note||'';
+    x.due    = x.due||null;
+    x.target = (x.target===undefined||x.target==='') ? null : x.target;
+    x._i=i; x._status=statusOf(x); x._window=windowOf(x); x._away=daysAway(x.due);
+    return x;
+  });
+}
+
+function loadTasks(){
+  fetch(DATA_ENDPOINT,{method:'GET'})
+    .then(r=>{ if(!r.ok) throw new Error(r.status); return r.json(); })
+    .then(d=>{
+      if(!d || d.ok!==true || !d.tasks || !d.tasks.length) throw new Error('empty');
+      TASKS = normalise(d.tasks);
+      if(d.settings && d.settings.fair_date) FAIR_DATE_LIVE=d.settings.fair_date;
+      state.expanded.clear(); state._date=null; state.filters={};
+      redrawAll(); renderCountdown(); renderThanks(); renderProgress();
+      stamp('Live from the sheet · '+new Date().toLocaleTimeString([],{hour:'numeric',minute:'2-digit'}));
+    })
+    .catch(()=>{
+      document.getElementById('offline').classList.add('show');
+      stamp('Showing the built-in snapshot');
+    });
+}
+
+function stamp(txt){ const el=document.getElementById('savestate'); if(el) el.textContent=txt; }
+
+function redrawAll(){ render(); }
+
+/* ---------------- thank-you line ---------------- */
+/* Set to 0 to stop it changing on its own. */
+const THANKS_ROTATE_MS = 9000;
+
+let thanksTimer=null, thanksLast=-1;
+
+function thankable(){
+  // Placeholder entries like "(+1, unnamed)" aren't people to thank.
+  return TASKS.map(t=>({
+    task:t.task,
+    names:t.owners.filter(n=>n && n.charAt(0)!=='(')
+  })).filter(x=>x.names.length);
+}
+
+function nameList(a){
+  if(a.length===1) return esc(a[0]);
+  if(a.length===2) return esc(a[0])+' and '+esc(a[1]);
+  return a.slice(0,-1).map(esc).join(', ')+', and '+esc(a[a.length-1]);
+}
+
+function thanksLine(x){
+  return '<div class="line"><span class="who">'+nameList(x.names)+'</span> signed up for '+
+         '<span class="what">'+esc(x.task)+'</span> &mdash; '+
+         '<span class="ta">thank you!</span></div>';
+}
+
+function paintThanks(){
+  const pool=thankable();
+  const el=document.getElementById('thanks');
+  if(!el) return;
+  if(!pool.length){ el.hidden=true; return; }
+  el.hidden=false;
+
+  let i=Math.floor(Math.random()*pool.length);
+  if(pool.length>1) while(i===thanksLast) i=Math.floor(Math.random()*pool.length);
+  thanksLast=i;
+  el.innerHTML=thanksLine(pool[i]);
+}
+
+function renderThanks(){
+  paintThanks();
+  if(thanksTimer) clearInterval(thanksTimer);
+  if(!THANKS_ROTATE_MS || thankable().length<2) return;
+  thanksTimer=setInterval(()=>{
+    const el=document.getElementById('thanks');
+    if(!el||el.hidden) return;
+    el.classList.add('fading');
+    setTimeout(()=>{ paintThanks(); el.classList.remove('fading'); },450);
+  },THANKS_ROTATE_MS);
+}
+
+function renderCountdown(){
+  const el=document.getElementById('cd');
+  if(el) el.textContent=daysAway(FAIR_DATE_LIVE);
+}
+
+function renderDeadlines(){
+  const byDate={};
+  filtered().forEach(t=>{ if(!t.due) return; (byDate[t.due]=byDate[t.due]||[]).push(t); });
+  const dates=Object.keys(byDate).sort();
+  if(!dates.length){
+    document.getElementById('deadlines').innerHTML=
+      '<div style="font-size:12.5px;color:var(--ink-mid);padding:6px 0">Nothing matches those filters.</div>';
+  } else
+  document.getElementById('deadlines').innerHTML=dates.map(d=>{
+    const n=daysAway(d);
+    const cls=n<=14?'now':(n<=30?'soon':'');
+    const items=byDate[d].sort((a,b)=>a.act.localeCompare(b.act)).map(t=>{
+      const right = '<span class="snote">'+esc(t.note)+'</span>'+
+        '<span class="spill '+STATUS_CLS[t.status]+'">'+esc(t.status)+'</span>';
+      return '<li><span class="dot '+t._status+'"></span>'+
+        '<span class="sright">'+right+'</span>'+
+        '<span class="txt">'+esc(t.task)+' <span class="act">· '+esc(t.act)+'</span></span></li>';
+    }).join('');
+    return '<div class="dl"><div class="head">'+
+      '<span class="date" style="cursor:pointer" data-date="'+d+'">'+fmtDate(d)+'</span>'+
+      '<span class="away '+cls+'">'+awayLabel(n)+'</span>'+
+      '<span style="margin-left:auto;font-size:11px;color:var(--ink-mid)">'+byDate[d].length+' task'+(byDate[d].length===1?'':'s')+'</span>'+
+      '</div><ul>'+items+'</ul></div>';
+  }).join('');
+
+  document.querySelectorAll('#deadlines .date').forEach(el=>el.onclick=()=>{
+    state._date = state._date===el.dataset.date ? null : el.dataset.date;
+    render();
+  });
+
+}
+
+function renderGaps(){
+  const rows=filtered().filter(t=>t._status!=='filled');
+  const order=chipModel().order;
+
+  const sub=t=>{
+    if(t.target===null) return t.owners.length
+      ? t.owners.length+' signed up · more hands welcome'
+      : 'more hands welcome';
+    return t.owners.length+' of '+t.target+' signed up';
+  };
+
+  const byAct=new Map();
+  rows.forEach(t=>{ if(!byAct.has(t.act)) byAct.set(t.act,[]); byAct.get(t.act).push(t); });
+
+  const html=order.filter(a=>byAct.has(a)).map(act=>{
+    const items=byAct.get(act)
+      .sort((a,b)=>(a.due||'9999').localeCompare(b.due||'9999'))
+      .map(t=>
+        '<div class="gap"><div><div class="n">'+esc(t.task)+'</div>'+
+        '<div class="a">'+sub(t)+'</div></div>'+
+        '<div class="right"><span class="d">'+fmtDate(t.due)+'</span>'+
+        '<button class="helpbtn" data-help="'+t._i+'">I can help</button></div></div>').join('');
+    const n=byAct.get(act).length;
+    return '<div class="gframe"><div class="glab">'+esc(act)+
+      '<span>'+n+' task'+(n===1?'':'s')+'</span></div>'+
+      '<div class="gbody">'+items+'</div></div>';
+  }).join('');
+
+  document.getElementById('gaps').innerHTML = html ||
+    '<div style="font-size:12.5px;color:var(--ink-mid)">'+
+    (anyFilter()?'Nothing here needs people right now.':'Every task has the people it needs.')+'</div>';
+
+  document.querySelectorAll('#gaps .helpbtn').forEach(b=>b.onclick=()=>openSignup(TASKS[+b.dataset.help]));
+
+  const c=document.getElementById('gapcount');
+  if(c) c.textContent=rows.length+' task'+(rows.length===1?'':'s');
+}
+
+/* ---------------- sign-up modal ---------------- */
+function closeSignup(){ const v=document.querySelector('.veil'); if(v) v.remove(); }
+
+function mailtoFor(t,name,contact,note){
+  const body='Task: '+t.task+'\nActivity: '+t.act+'\nDue: '+(t.due||'no date')+
+    '\n\nName: '+name+'\nEmail: '+contact+'\nNote: '+(note||'—')+
+    '\n\nSent from the Autumn Fair volunteer tracker.';
+  return 'mailto:'+SIGNUP_EMAIL+'?subject='+encodeURIComponent('Autumn Fair — '+name+' can help with '+t.task)+
+         '&body='+encodeURIComponent(body);
+}
+
+function openSignup(t){
+  closeSignup();
+  const veil=document.createElement('div');
+  veil.className='veil';
+  veil.innerHTML=
+    '<div class="modal" role="dialog" aria-modal="true">'+
+      '<div class="top"><div class="l">Autumn Fair · Nov 7</div>'+
+      '<h3>'+esc(t.task)+'</h3>'+
+      '<div class="sub">'+esc(t.act)+' · due '+fmtDate(t.due)+
+        (t.target?' · needs '+t.target+' '+(t.target===1?'person':'people'):'')+'</div></div>'+
+      '<div class="body" id="mbody">'+
+        '<div class="msg" style="margin-bottom:14px">'+esc(t.detail)+'</div>'+
+        '<label for="sname">Your name</label><input id="sname" type="text" autocomplete="name">'+
+        '<label for="scontact">Your email</label>'+
+        '<input id="scontact" type="email" autocomplete="email" inputmode="email">'+
+        '<div class="ferr" id="serr"></div>'+
+        '<label for="snote">Anything we should know <span style="text-transform:none;letter-spacing:0;font-weight:500">(optional)</span></label>'+
+        '<textarea id="snote"></textarea>'+
+        '<input class="hp" id="shp" tabindex="-1" autocomplete="off" aria-hidden="true">'+
+        '<div class="row"><button id="scancel">Cancel</button>'+
+        '<button class="go" id="ssend">Send</button></div>'+
+        '<div class="note">We only use your email to confirm the details with you. This is an expression of interest, not a commitment &mdash; someone from the PTC will follow up before anything is confirmed.</div>'+
+      '</div>'+
+    '</div>';
+  document.body.appendChild(veil);
+  veil.onclick=e=>{ if(e.target===veil) closeSignup(); };
+  document.getElementById('scancel').onclick=closeSignup;
+  document.getElementById('sname').focus();
+  document.getElementById('ssend').onclick=()=>submitSignup(t);
+}
+
+function submitSignup(t){
+  const name=document.getElementById('sname').value.trim();
+  const contact=document.getElementById('scontact').value.trim();
+  const note=document.getElementById('snote').value.trim();
+  const hp=document.getElementById('shp').value;
+  const btn=document.getElementById('ssend');
+
+  const err=document.getElementById('serr');
+  const flag=(el,msg)=>{ el.classList.add('bad'); err.textContent=msg; el.focus(); };
+  document.getElementById('sname').classList.remove('bad');
+  document.getElementById('scontact').classList.remove('bad');
+  err.textContent='';
+
+  if(!name){ flag(document.getElementById('sname'),'We need a name to follow up.'); return; }
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(contact)){
+    flag(document.getElementById('scontact'),'We need a working email so we can confirm the details.');
+    return;
+  }
+  if(hp) { closeSignup(); return; }   // honeypot: silently drop bots
+
+  const done=(msg,cls)=>{
+    document.getElementById('mbody').innerHTML=
+      '<div class="msg '+(cls||'')+'">'+msg+'</div>'+
+      '<div class="row"><button class="go" onclick="closeSignup()">Close</button></div>';
+  };
+
+  if(!SIGNUP_ENDPOINT){
+    window.location.href=mailtoFor(t,name,contact,note);
+    done('Your mail app should be opening with the message ready. <b>Press send</b> to finish — nothing reaches us until you do.');
+    return;
+  }
+
+  btn.disabled=true; btn.textContent='Sending…';
+  fetch(SIGNUP_ENDPOINT,{
+    method:'POST',
+    headers:{'Content-Type':'text/plain;charset=utf-8'},
+    body:JSON.stringify({task:t.task,activity:t.act,due:t.due||'',target:t.target,
+                         name:name,contact:contact,note:note})
+  }).then(r=>r.text()).then(()=>{
+    done('Thanks, '+esc(name.split(' ')[0])+'. We have it. Someone from the PTC will be in touch before anything is confirmed.');
+  }).catch(()=>{
+    const link=mailtoFor(t,name,contact,note);
+    done('That didn\'t go through. <a href="'+link+'" style="color:var(--purple)"><b>Send it by email instead</b></a> — the message is already written.','err');
+  });
+}
+
+/* ---------------- progress bars ---------------- */
+/* Deliberately not filtered: this is the whole-Fair picture, and the
+   rows are the filter groups themselves. */
+const PHASES=[['Pre-fair','Before'],['Day-before setup','Fri Nov 6'],['Day of fair','Sat Nov 7']];
+
+function slots(list){
+  let need=0, have=0;
+  list.forEach(t=>{
+    if(t.target===null) return;          // no headcount to measure against
+    need+=t.target;
+    have+=Math.min(t.owners.length,t.target);
+  });
+  return {need:need,have:have};
+}
+
+function barCell(list,label){
+  const s=slots(list);
+  const lab='<div class="clab">'+esc(label)+'</div>';
+  if(!s.need){
+    return '<td class="cc pcell none">'+lab+
+      '<div class="pnum">&mdash;</div><div class="pbar"><i style="width:0"></i></div></td>';
+  }
+  const pct=Math.round(s.have/s.need*100);
+  return '<td class="cc pcell">'+lab+
+    '<div class="pnum"><b>'+s.have+'</b> of '+s.need+' &middot; '+pct+'%</div>'+
+    '<div class="pbar"><i style="width:'+pct+'%"></i></div></td>';
+}
+
+function progressRow(label,list,cls){
+  return '<tr class="prow '+cls+'"><td class="cw plab">'+esc(label)+'</td>'+
+    PHASES.map(([name,win])=>barCell(list.filter(t=>t._window===win),name)).join('')+
+    '</tr>';
+}
+
+function dayRow(label,list){
+  const s=slots(list);
+  const pct=s.need?Math.round(s.have/s.need*100):0;
+  return '<div class="dayrow"><div class="ptop"><span class="plab">'+esc(label)+'</span>'+
+    '<span class="pnum">'+(s.need?'<b>'+s.have+'</b> of '+s.need+' slots &middot; '+pct+'%':'no headcount set')+'</span></div>'+
+    '<div class="pbar"><i style="width:'+pct+'%"></i></div></div>';
+}
+
+function renderProgress(){
+  const el=document.getElementById('progress');
+  if(!el) return;
+  const M=chipModel();
+
+  let rows='<tr class="phead"><th class="cw"></th>'+
+    PHASES.map(([name])=>'<th class="cc">'+esc(name)+'</th>').join('')+'</tr>';
+
+  rows+=progressRow('The whole Fair', TASKS, 'total');
+  M.classes.forEach(([act,g])=>
+    rows+=progressRow(g+' - '+act, TASKS.filter(t=>t.act===act), 'p1'));
+  M.chips.forEach(c=>
+    rows+=progressRow(c.label, TASKS.filter(t=>c.members.indexOf(t.act)>=0), 'p3'));
+
+  const days='<div class="dayspacer"></div>'+
+    PROGRESS_DAY_CHIPS.map(([label,win])=>dayRow(label, TASKS.filter(t=>t._window===win))).join('');
+
+  el.innerHTML='<table class="ptab">'+rows+'</table>'+days;
+}
+
+/* ---------------- quick filter chips ---------------- */
+const DAY_CHIPS=[['Pre-Fair','Before'],['Day before Fair','Fri Nov 6'],['Day of Fair','Sat Nov 7']];
+/* The progress panel already splits every row into these three phases,
+   so its trailing single-bar rows stay as the two Fair days. */
+const PROGRESS_DAY_CHIPS=[['Day before Fair','Fri Nov 6'],['Day of Fair','Sat Nov 7']];
+
+/* Chips in the second row can stand for several activities at once.
+   Members that don't exist in the data are ignored, so it's safe to
+   list an activity here before you've added it to the sheet.       */
+const CHIP_GROUPS=[
+  ['Atmosphere',        ['Decorations + Campus','HS Art Gallery','Music']],
+  ['Behind the Scenes', ['Behind the Scenes','Internal Vendors','Marketing',
+                         'Parking + Shuttles','Runners + Floaters']],
+  ['Food',              ['Cafe','Grill']]
+];
+
+/* Activities with no chip of their own. Still in the table, still
+   reachable through the Day before Fair chip.                      */
+const CHIP_HIDE=['Friday Setup Day'];
+
+function toggleFilter(key,val,el){
+  holdStill(el,()=>{
+    const cur=new Set(state.filters[key]||[]);
+    cur.has(val)?cur.delete(val):cur.add(val);
+    setFilter(key,cur.size?cur:null);
+    render();
+  });
+}
+
+function toggleGroup(members,el){
+  holdStill(el,()=>{
+    const cur=new Set(state.filters['act']||[]);
+    const allOn=members.every(m=>cur.has(m));
+    members.forEach(m=>{ allOn?cur.delete(m):cur.add(m); });
+    setFilter('act',cur.size?cur:null);
+    render();
+  });
+}
+
+/* The chip rows and the grouped gap list are built from the same
+   model, so they can never fall out of order with each other. */
+function chipModel(){
+  const seen=new Map();
+  TASKS.forEach(t=>{ if(!seen.has(t.act)) seen.set(t.act,t.grade||''); });
+
+  const classes=[...seen.entries()]
+    .filter(([,g])=>/^Grades\s/.test(g))
+    .sort((a,b)=>a[1].localeCompare(b[1]));
+  const classActs=new Set(classes.map(c=>c[0]));
+
+  const grouped=new Set();
+  CHIP_GROUPS.forEach(([,ms])=>ms.forEach(m=>grouped.add(m)));
+
+  const chips=[];
+  CHIP_GROUPS.forEach(([label,members])=>{
+    const live=members.filter(m=>seen.has(m));
+    if(live.length) chips.push({label:label,members:live});
+  });
+  [...seen.keys()].forEach(act=>{
+    if(classActs.has(act)||grouped.has(act)||CHIP_HIDE.indexOf(act)>=0) return;
+    chips.push({label:act,members:[act]});
+  });
+  chips.sort((a,b)=>a.label.localeCompare(b.label));
+
+  // Activity order used everywhere: class activities by grade, then
+  // the chip groups in chip order, then anything with no chip.
+  const order=classes.map(c=>c[0]);
+  chips.forEach(c=>c.members.forEach(m=>{ if(order.indexOf(m)<0) order.push(m); }));
+  [...seen.keys()].forEach(a=>{ if(order.indexOf(a)<0) order.push(a); });
+
+  return {seen:seen, classes:classes, chips:chips, order:order};
+}
+
+function renderQuick(){
+  const M=chipModel();
+  const classes=M.classes, chips=M.chips;
+
+  const actSel=state.filters['act']||new Set();
+  const winSel=state.filters['_window']||new Set();
+
+  const rowDays=DAY_CHIPS.map(([label,win])=>
+      '<button class="qchip c2'+(winSel.has(win)?' on':'')+'" data-win="'+esc(win)+'">'+
+      esc(label)+'</button>').join('');
+
+  const rowClasses=classes.map(([act,g])=>
+      '<button class="qchip c1'+(actSel.has(act)?' on':'')+'" data-act="'+esc(act)+'">'+
+      esc(g)+' - '+esc(act)+'</button>').join('');
+
+  const rowOther=chips.map((c,i)=>
+      '<button class="qchip c3'+(c.members.every(m=>actSel.has(m))?' on':'')+
+      '" data-group="'+i+'">'+esc(c.label)+'</button>').join('');
+
+  const shown=filtered().length;
+  const summary = anyFilter()
+    ? '<div class="qsum">Showing <b>'+shown+'</b> of '+TASKS.length+
+      ' tasks across the whole page <button class="qclear">Clear</button></div>'
+    : '';
+
+  const html =
+    (rowDays   ?'<div class="quickrow">'+rowDays+'</div>':'')+
+    (rowClasses?'<div class="quickrow">'+rowClasses+'</div>':'')+
+    (rowOther  ?'<div class="quickrow">'+rowOther+'</div>':'')+
+    summary;
+
+  ['quickTop','quick'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.innerHTML=html;
+  });
+
+  document.querySelectorAll('.quick [data-act]').forEach(b=>
+    b.onclick=()=>toggleFilter('act',b.dataset.act,b));
+  document.querySelectorAll('.quick [data-win]').forEach(b=>
+    b.onclick=()=>toggleFilter('_window',b.dataset.win,b));
+  document.querySelectorAll('.quick [data-group]').forEach(b=>
+    b.onclick=()=>toggleGroup(chips[+b.dataset.group].members,b));
+  document.querySelectorAll('.quick .qclear').forEach(b=>
+    b.onclick=()=>clearFilters());
+}
+
+/* ---------------- table ---------------- */
+/* Filtering redraws the whole page, so panels above the click can
+   shrink and drag the page out from under the cursor. Hold the
+   clicked control still in the viewport instead of scrolling. */
+function holdStill(el,fn){
+  if(!el || !el.getBoundingClientRect){ fn(); return; }
+  const key = el.dataset.act ? 'act:'+el.dataset.act
+            : el.dataset.win ? 'win:'+el.dataset.win
+            : el.dataset.group !== undefined ? 'grp:'+el.dataset.group : null;
+  const box = el.closest('.quick');
+  const before = el.getBoundingClientRect().top;
+  fn();
+  if(!key || !box) return;
+  const sel = key.startsWith('act:') ? '[data-act="'+CSS.escape(el.dataset.act)+'"]'
+            : key.startsWith('win:') ? '[data-win="'+CSS.escape(el.dataset.win)+'"]'
+            : '[data-group="'+el.dataset.group+'"]';
+  const again = document.getElementById(box.id) && document.getElementById(box.id).querySelector(sel);
+  if(!again) return;
+  const after = again.getBoundingClientRect().top;
+  if(after !== before) window.scrollBy(0, after - before);
+}
+
+function esc(s){ return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+
+function renderHead(){
+  document.getElementById('thead').innerHTML=COLUMNS.map(c=>{
+    const active=state.filters[c.key] && state.filters[c.key].size;
+    const arrow=state.sort===c.key?(state.dir===1?' ↑':' ↓'):'';
+    return '<th><div class="th"><span class="lab" data-sort="'+c.key+'">'+c.label+arrow+'</span>'+
+      (c.filter?'<button class="fbtn'+(active?' active':'')+'" data-filter="'+c.key+'">▼</button>':'')+
+      '</div></th>';
+  }).join('');
+  document.querySelectorAll('#thead .lab').forEach(el=>el.onclick=()=>{
+    const k=el.dataset.sort;
+    if(state.sort===k) state.dir*=-1; else { state.sort=k; state.dir=1; }
+    render();
+  });
+  document.querySelectorAll('#thead .fbtn').forEach(el=>el.onclick=e=>{
+    e.stopPropagation(); openFilter(el, el.dataset.filter);
+  });
+}
+
+/* Nov 7 shift rows collapse into one "Day-of Shifts" line per job.
+   "Shift 2 · 11:45–1:00"  and  "Direct parking — Shift 2 · 11:45–1:00"
+   both count; the part before the em dash keeps two different jobs in
+   the same activity apart. */
+const SHIFT_RE=/(?:^|—\s)Shift\s\d/;
+const isShift=t=>SHIFT_RE.test(t.task);
+const shiftJob=t=>t.task.indexOf(' — ')>=0 ? t.task.split(' — ')[0] : '';
+const shiftWhen=t=>t.task.indexOf(' — ')>=0 ? t.task.split(' — ').slice(1).join(' — ') : t.task;
+
+function collapseShifts(rows){
+  const out=[], byKey={};
+  rows.forEach(t=>{
+    if(!isShift(t)){ out.push(t); return; }
+    const job=shiftJob(t), key=t.act+'||'+job;
+    if(!byKey[key]){
+      byKey[key]={ _group:true, key:key, act:t.act, grade:t.grade, job:job,
+                   label:(job?job+' — ':'')+'Day-of Shifts', members:[] };
+      out.push(byKey[key]);
+    }
+    byKey[key].members.push(t);
+  });
+  return out;
+}
+
+function groupTotals(g){
+  let have=0, need=0, untargeted=0;
+  const names=[];
+  g.members.forEach(t=>{
+    t.owners.forEach(n=>{ if(names.indexOf(n)<0) names.push(n); });
+    if(t.target===null){ untargeted++; return; }
+    need+=t.target; have+=Math.min(t.owners.length,t.target);
+  });
+  const status = !need ? (names.length?'notarget':'open')
+               : have===0 ? 'open'
+               : have>=need ? 'filled' : 'partial';
+  return {have:have,need:need,untargeted:untargeted,names:names,status:status};
+}
+
+function sheetPill(v){ return '<span class="pill '+(STATUS_CLS[v]||'todo')+'">'+esc(v)+'</span>'; }
+
+function drawerBullets(t){
+  const who=t.owners.length? t.owners.map(esc).join(', ')
+                           : '<span class="none">nobody yet</span>';
+  return '<ul class="dmeta"><li><b>Time</b> '+esc(t.time||'—')+'</li>'+
+         '<li><b>Signed up</b> '+who+'</li></ul>';
+}
+
+function renderBody(){
+  const rows=visible();
+  const items=collapseShifts(rows);
+  const tb=document.getElementById('tbody');
+  document.getElementById('empty').style.display=rows.length?'none':'block';
+
+  tb.innerHTML=items.map(item=>{
+
+    /* ---------- collapsed group of shifts ---------- */
+    if(item._group){
+      const g=groupTotals(item);
+      const open=state.expanded.has('g:'+item.key);
+      const n=item.members.length;
+      const slots = g.need ? g.have+' / '+g.need
+        : '<span style="color:var(--notarget)">?</span>';
+
+      // one sheet status for the group if they agree, otherwise Mixed
+      const set=[]; item.members.forEach(m=>{ if(set.indexOf(m.status)<0) set.push(m.status); });
+      const sp = set.length===1 ? sheetPill(set[0])
+                                : '<span class="pill mixed">Mixed</span>';
+
+      let html='<tr class="'+(open?'expanded':'')+'">'+
+        '<td>'+sp+'</td>'+
+        '<td class="act">'+esc(item.act)+'<small>'+esc(item.grade)+'</small></td>'+
+        '<td class="task" data-g="'+esc(item.key)+'"><span class="chev">'+(open?'▼':'▶')+'</span>'+
+          esc(item.label)+' <span class="sub">'+n+' shift'+(n===1?'':'s')+'</span></td>'+
+        '<td class="due urgent">Nov 7<span class="away">'+awayLabel(daysAway('2026-11-07'))+'</span></td>'+
+        '<td><span class="pill '+g.status+'">'+STATUS_LABEL[g.status]+'</span></td>'+
+        '<td class="num">'+slots+'</td></tr>';
+
+      if(open){
+        const inner=item.members.map(t=>{
+          const o=t.owners.length? t.owners.map(esc).join(', ')
+                                 : '<span class="none">nobody yet</span>';
+          const sl=t.target===null? '<span style="color:var(--notarget)">?</span>'
+                                  : t.owners.length+' / '+t.target;
+          return '<tr><td class="sh">'+esc(shiftWhen(t))+'</td>'+
+                 '<td>'+esc(t.time)+'</td>'+
+                 '<td class="owners">'+o+'</td>'+
+                 '<td class="num">'+sl+'</td>'+
+                 '<td><span class="pill '+t._status+'">'+STATUS_LABEL[t._status]+'</span></td></tr>';
+        }).join('');
+        html+='<tr class="detail"><td colspan="6">'+
+          '<div class="d">'+esc(item.members[0].detail||'')+'</div>'+
+          '<table class="shifts">'+inner+'</table></td></tr>';
+      }
+      return html;
+    }
+
+    /* ---------- ordinary task ---------- */
+    const t=item;
+    const urgent=t._away!==null && t._away<=14;
+    const slots=t.target===null ? '<span style="color:var(--notarget)">?</span>'
+      : t.owners.length+' / '+t.target;
+    const open=state.expanded.has('i:'+t._i);
+    let html='<tr class="'+(open?'expanded':'')+'">'+
+      '<td>'+sheetPill(t.status)+'</td>'+
+      '<td class="act">'+esc(t.act)+'<small>'+esc(t.grade)+'</small></td>'+
+      '<td class="task" data-x="'+t._i+'"><span class="chev">'+(open?'▼':'▶')+'</span>'+esc(t.task)+'</td>'+
+      '<td class="due'+(urgent?' urgent':'')+'">'+fmtDate(t.due)+
+        '<span class="away">'+(t.due?awayLabel(t._away):'sept–oct')+'</span></td>'+
+      '<td><span class="pill '+t._status+'">'+STATUS_LABEL[t._status]+'</span></td>'+
+      '<td class="num">'+slots+'</td></tr>';
+    if(open) html+='<tr class="detail"><td colspan="6"><div class="d">'+esc(t.detail)+'</div>'+
+      drawerBullets(t)+
+      (t.target===null?'<div class="meta">No headcount set for this one yet.</div>':'')+
+      '</td></tr>';
+    return html;
+  }).join('');
+
+  const toggle=key=>{
+    state.expanded.has(key)?state.expanded.delete(key):state.expanded.add(key);
+    renderBody();
+  };
+  tb.querySelectorAll('td.task[data-x]').forEach(el=>el.onclick=()=>toggle('i:'+el.dataset.x));
+  tb.querySelectorAll('td.task[data-g]').forEach(el=>el.onclick=()=>toggle('g:'+el.dataset.g));
+
+  const shown=rows.length;
+  document.getElementById('count').textContent=
+    (shown===TASKS.length ? shown+' tasks' : shown+' of '+TASKS.length+' tasks')+
+    ' · '+items.length+' rows';
+}
+
+/* ---------------- filter menu ---------------- */
+let menu=null;
+function closeMenu(){ if(menu){ menu.remove(); menu=null; } }
+document.addEventListener('click',e=>{ if(menu && !menu.contains(e.target)) closeMenu(); });
+document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ closeMenu(); closeSignup(); } });
+
+function openFilter(btn,key){
+  closeMenu();
+  const vals=distinct(key);
+  const sel=state.filters[key]||new Set();
+  menu=document.createElement('div');
+  menu.className='fmenu';
+  menu.innerHTML='<div class="tools"><button data-all>Select all</button><button data-none>Clear</button></div>'+
+    vals.map(v=>'<label><input type="checkbox" value="'+esc(v)+'"'+(sel.has(v)?' checked':'')+'>'+esc(v)+'</label>').join('');
+  document.body.appendChild(menu);
+  const r=btn.getBoundingClientRect();
+  menu.style.left=Math.min(r.left+window.scrollX, window.innerWidth-menu.offsetWidth-16)+'px';
+  menu.style.top=(r.bottom+window.scrollY+4)+'px';
+  const apply=()=>{
+    const on=new Set([...menu.querySelectorAll('input:checked')].map(i=>i.value));
+    setFilter(key, on.size===vals.length?null:on);
+    render();
+  };
+  menu.querySelectorAll('input').forEach(i=>i.onchange=apply);
+  menu.querySelector('[data-all]').onclick=()=>{ menu.querySelectorAll('input').forEach(i=>i.checked=true); apply(); closeMenu(); };
+  menu.querySelector('[data-none]').onclick=()=>{ menu.querySelectorAll('input').forEach(i=>i.checked=false); apply(); closeMenu(); };
+}
+
+function setFilter(key,set){
+  if(!set || !set.size) delete state.filters[key];
+  else state.filters[key]=set;
+}
+
+function renderChips(){
+  const c=[];
+  if(state._date) c.push(['Due','' + fmtDate(state._date),()=>{state._date=null;}]);
+  if(state.only==='open') c.push(['Showing','unfilled only',()=>{state.only=null;}]);
+  if(state.only==='notarget') c.push(['Showing','missing a target',()=>{state.only=null;}]);
+  for(const k in state.filters){
+    const def=FILTER_DEF[k]; if(!def) continue;
+    const v=[...state.filters[k]];
+    c.push([def.label, v.length>2? v.length+' selected' : v.join(', '), ()=>{delete state.filters[k];}]);
+  }
+  const el=document.getElementById('chips');
+  el.innerHTML=c.map((x,i)=>'<span class="chip"><b>'+esc(x[0])+'</b> '+esc(x[1])+
+    ' <button data-c="'+i+'">×</button></span>').join('');
+  el.querySelectorAll('button').forEach(b=>b.onclick=()=>{ c[+b.dataset.c][2](); render(); });
+}
+
+/* ---------------- csv ---------------- */
+function csv(){
+  const rows=visible();
+  const head=['Status','Activity','Task','When','Due','Time','Signed up','Filled','Target','Availability','Detail'];
+  const q=s=>'"'+String(s).replace(/"/g,'""')+'"';
+  const body=rows.map(t=>[t.status,t.act,t.task,t._window,t.due||'',t.time,t.owners.join('; '),
+    t.owners.length,t.target===null?'':t.target,STATUS_LABEL[t._status],t.detail].map(q).join(','));
+  const blob=new Blob([[head.map(q).join(',')].concat(body).join('\n')],{type:'text/csv'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='autumn-fair-tasks.csv';
+  a.click();
+}
+
+/* ---------------- wire up ---------------- */
+document.getElementById('q').oninput=e=>{ state.q=e.target.value; render(); };
+document.getElementById('fOpen').onclick=()=>{ state.only=state.only==='open'?null:'open'; render(); };
+document.getElementById('fNoTarget').onclick=()=>{ state.only=state.only==='notarget'?null:'notarget'; render(); };
+function clearFilters(){
+  state.q=''; state.only=null; state.filters={}; state._date=null;
+  document.getElementById('q').value=''; render();
+}
+document.getElementById('fClear').onclick=clearFilters;
+document.getElementById('fCsv').onclick=csv;
+
+// One render path: every filter change redraws the whole page, so the
+// panels, the cards and the table can never disagree.
+function render(){
+  document.getElementById('fOpen').classList.toggle('on',state.only==='open');
+  document.getElementById('fNoTarget').classList.toggle('on',state.only==='notarget');
+  renderDeadlines(); renderGaps();
+  renderHead(); renderQuick(); renderChips(); renderBody();
+}
+
+TASKS = normalise(TASKS);
+render(); renderCountdown(); renderThanks(); renderProgress();
+stamp('Loading from the sheet…');
+loadTasks();
+
+document.getElementById('stamp').textContent='Edit the Google Sheet to change anything on this page.';
+</script>
+</body>
+</html>
