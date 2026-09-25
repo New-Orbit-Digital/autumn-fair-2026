@@ -17,7 +17,7 @@ This repo is public. Do not commit volunteer names, emails, or a refreshed snaps
 
 ## Hosting
 
-GitHub Pages from `main` / root, served under the org domain at `/autumn-fair-2026/`. All paths are relative; the only external assets are the Google Fonts stylesheet and the Apps Script data endpoint. The old Netlify site stays up only to serve a 301 redirect here.
+GitHub Pages from `main` / root, served under the org domain at `/autumn-fair-2026/`. All paths are relative; the only external assets are the Google Fonts stylesheet and the Apps Script data endpoint. The old Netlify site (ews-af26-dashboard.netlify.app) stays up only to serve a 301 redirect here.
 
 ## Verification
 
@@ -26,5 +26,6 @@ GitHub Pages from `main` / root, served under the org domain at `/autumn-fair-20
 | 2026-09-25 | Local headless Chromium render of `index.html` with the sheet endpoint mocked | Rendered, "Live from the sheet" stamp shown, no script errors |
 | 2026-09-25 | Scan of source for volunteer names and personal emails | Snapshot owners empty; personal first names in task text replaced with roles; only email is the PTC role address |
 | 2026-09-25 | Pushed `index.html` (commit f8a3aad) vs. prepared local file | Byte-identical, SHA-1 1050e598555f3138b0f914c9ec9327032b41e0e2 |
-| pending | https://justbost.com/autumn-fair-2026/ loads, live sheet read works | — |
-| pending | `curl -I` on old Netlify URL returns 301 → justbost.com/autumn-fair-2026/ | — |
+| 2026-09-25 | https://justbost.com/autumn-fair-2026/ served by Pages | Loads; title "Autumn Fair 2026 — Volunteer Tracker"; robots meta `noindex,nofollow` present. `screenshot.png` present on `main` (HTTP 200) |
+| pending | Live sheet read in a real browser on justbost.com ("Live from the sheet" stamp, no amber banner) | — (fetch tool used does not run JS) |
+| pending | `curl -I` on https://ews-af26-dashboard.netlify.app/ returns 301 → justbost.com/autumn-fair-2026/ | — |
