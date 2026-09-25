@@ -13,7 +13,7 @@ Live: https://justbost.com/autumn-fair-2026/ (unlisted — `noindex,nofollow`)
 
 ## Privacy
 
-This repo is public. Do not commit volunteer names, emails, or a refreshed snapshot that contains either. `screenshot.png` uses made-up placeholder names: `tools/screenshot.py` mocks the sheet request, and the `Screenshot` workflow re-captures and commits it whenever `index.html` changes.
+This repo is public. Do not commit volunteer names, emails, or a refreshed snapshot that contains either. `screenshot.png` uses made-up placeholder names: `tools/screenshot.py` captures it with the sheet request mocked (`pip install playwright && playwright install chromium`, then `python tools/screenshot.py`).
 
 ## Hosting
 
@@ -23,7 +23,8 @@ GitHub Pages from `main` / root, served under the org domain at `/autumn-fair-20
 
 | Date | Check | Result |
 |---|---|---|
-| 2026-09-25 | Local headless Chromium render of `index.html` with the sheet endpoint mocked | Rendered, "Live from the sheet" stamp shown, 0 console errors |
+| 2026-09-25 | Local headless Chromium render of `index.html` with the sheet endpoint mocked | Rendered, "Live from the sheet" stamp shown, no script errors |
 | 2026-09-25 | Scan of source for volunteer names and personal emails | Snapshot owners empty; personal first names in task text replaced with roles; only email is the PTC role address |
+| 2026-09-25 | Pushed `index.html` (commit f8a3aad) vs. prepared local file | Byte-identical, SHA-1 1050e598555f3138b0f914c9ec9327032b41e0e2 |
 | pending | https://justbost.com/autumn-fair-2026/ loads, live sheet read works | — |
 | pending | `curl -I` on old Netlify URL returns 301 → justbost.com/autumn-fair-2026/ | — |
