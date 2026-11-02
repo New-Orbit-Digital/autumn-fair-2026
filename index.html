@@ -1002,7 +1002,9 @@ function dlLine(dotCls,status,note,text,sub){
 function dlBlock(d,list){
   const n=daysAway(d);
   const cls=n<0?'':(n<=14?'now':(n<=30?'soon':''));
-  const sorted=list.slice().sort((a,b)=>a.act.localeCompare(b.act)||a.task.localeCompare(b.task));
+  // Activity order only; the sort is stable, so the sheet's own row order
+  // (which runs by time for music sets and shifts) is kept within each activity.
+  const sorted=list.slice().sort((a,b)=>a.act.localeCompare(b.act));
   const lines=collapseShifts(sorted);
   const items=lines.map(item=>{
     if(!item._group) return dlLine(item._status,item.status,item.note,item.task,item.act);
