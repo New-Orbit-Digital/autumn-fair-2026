@@ -1133,7 +1133,7 @@ function openSignup(t){
         '<input class="hp" id="shp" tabindex="-1" autocomplete="off" aria-hidden="true">'+
         '<div class="row"><button id="scancel">Cancel</button>'+
         '<button class="go" id="ssend">Send</button></div>'+
-        '<div class="note">We only use your email to confirm the details with you. This is an expression of interest, not a commitment &mdash; someone from the PTC will follow up before anything is confirmed.</div>'+
+        '<div class="note">We only use your email to confirm the details with you. If there&rsquo;s an open spot, you&rsquo;re added right away and we&rsquo;ll email you a confirmation. If it&rsquo;s already full, someone from the PTC will follow up.</div>'+
       '</div>'+
     '</div>';
   document.body.appendChild(veil);
@@ -1141,6 +1141,16 @@ function openSignup(t){
   document.getElementById('scancel').onclick=closeSignup;
   document.getElementById('sname').focus();
   document.getElementById('ssend').onclick=()=>submitSignup(t);
+}
+
+/* Show an auto-assigned sign-up on the page straight away, without
+   reloading the sheet (which would reset the visitor's filters). */
+function addOwnerLocally(t,name){
+  if(t.owners.indexOf(name)<0) t.owners.push(name);
+  t._status=statusOf(t);
+  if(t._window==='Sat Nov 7' && t._sheetStatus!=='Done' && t._sheetStatus!=='Blocked')
+    t.status=FILL_STATUS[t._status];
+  render(); renderProgress(); renderThanks();
 }
 
 function submitSignup(t){
@@ -1181,8 +1191,19 @@ function submitSignup(t){
     headers:{'Content-Type':'text/plain;charset=utf-8'},
     body:JSON.stringify({task:t.task,activity:t.act,due:t.due||'',target:t.target,
                          name:name,contact:contact,note:note})
-  }).then(r=>r.text()).then(()=>{
-    done('Thanks, '+esc(name.split(' ')[0])+'. We have it. Someone from the PTC will be in touch before anything is confirmed.');
+  }).then(r=>r.text()).then(txt=>{
+    // The script answers {ok, assigned}. An older deployment answers
+    // without "assigned"; that falls through to the follow-up message.
+    let d={}; try{ d=JSON.parse(txt)||{}; }catch(e){}
+    const first=esc(name.split(' ')[0]);
+    if(d.assigned===true){
+      addOwnerLocally(t,name);
+      done('You&rsquo;re on it, '+first+'. You&rsquo;re now listed for <b>'+esc(t.task)+'</b>, and a confirmation is on its way to '+esc(contact)+'.');
+    } else if(d.assigned===false){
+      done('Thanks, '+first+'. That one just filled up, so someone from the PTC will be in touch about where you can help.');
+    } else {
+      done('Thanks, '+first+'. We have it. Someone from the PTC will be in touch before anything is confirmed.');
+    }
   }).catch(()=>{
     const link=mailtoFor(t,name,contact,note);
     done('That didn\'t go through. <a href="'+link+'" style="color:var(--purple)"><b>Send it by email instead</b></a> — the message is already written.','err');
