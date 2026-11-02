@@ -322,6 +322,26 @@ tr.detail .meta{margin-top:6px;font-size:11.5px;color:var(--purple-soft);font-we
 .spill.doing{background:#F6E2B0;color:#7A5A00}
 .spill.done{background:#D5E6D8;color:#2C5C39}
 .spill.blocked{background:#F3D6C8;color:#8C3D18}
+/* day-of tasks show how covered they are instead of a work status */
+.spill.open{background:#F3D6C8;color:#8C3D18}
+.spill.partial{background:#F6E2B0;color:#7A5A00}
+.spill.filled{background:#D5E6D8;color:#2C5C39}
+.spill.notarget{background:#E5DCE8;color:#4E2D57}
+.spill.mixed{background:#E5DCE8;color:#4E2D57}
+
+/* "Already passed" fold at the bottom of Due next */
+.dlpast{border-top:1px solid var(--line);margin-top:2px}
+.dlpast > summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:8px;
+  padding:12px 0 2px;font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--ink-mid);user-select:none}
+.dlpast > summary::-webkit-details-marker{display:none}
+.dlpast > summary:hover{color:var(--purple)}
+.dlpast .pchev{display:inline-block;width:0;height:0;border-left:5px solid currentColor;
+  border-top:4px solid transparent;border-bottom:4px solid transparent;transition:transform .15s}
+.dlpast[open] .pchev{transform:rotate(90deg)}
+.dlpast .pcount{margin-left:auto;font-size:11px;font-weight:400;letter-spacing:0;text-transform:none}
+.dlpast-body{margin-top:6px}
+.dlpast-body .dl .date{color:var(--ink-mid)}
 
 
 /* help button on gap rows */
@@ -451,7 +471,7 @@ footer{margin-top:26px;font-size:11.5px;color:var(--ink-mid);display:flex;
     </div>
     <div class="panel">
       <h2>Due next</h2>
-      <div class="hint">Every deadline still ahead of us, nearest first. Click a date to filter the page to it. The dot on the left is how many people have signed up; the label on the right is how the work is going.</div>
+      <div class="hint">Every deadline still ahead of us, nearest first; past dates are folded up at the bottom. Click a date to filter the page to it. The dot on the left is how many people have signed up; the label on the right is how the work is going, or for Fair-day tasks, whether they're covered.</div>
       <div class="body" id="deadlines"></div>
     </div>
   </div>
@@ -792,7 +812,7 @@ const FILTER_DEF={
   _status: {label:'Availability', value:t=>STATUS_LABEL[t._status]},
 };
 
-const SHEET_STATUS_ORDER={'Blocked':0,'To do':1,'In progress':2,'Done':3};
+const SHEET_STATUS_ORDER={'Blocked':1,'Open':2,'To do':3,'Partial':4,'In progress':5,'No target':6,'Filled':7,'Done':8};
 
 const COLUMNS=[
   {key:'status', label:'Status',       filter:true,  sort:t=>SHEET_STATUS_ORDER[t.status]},
@@ -859,6 +879,14 @@ function canonStatus(v){
   const hit=Object.keys(STATUS_CLS).find(k=>k.toLowerCase()===raw);
   return hit||'To do';
 }
+/* Fair-day tasks (the "Day of Fair" window) are people showing up for a
+   shift; there's no "in progress" to track. Unless the sheet says Done
+   or Blocked, their status shows how covered they are instead. */
+const FILL_STATUS={open:'Open',partial:'Partial',filled:'Filled',notarget:'No target'};
+const PILL_CLS=Object.assign({},STATUS_CLS,
+  {'Open':'open','Partial':'partial','Filled':'filled','No target':'notarget'});
+const isFillStatus=s=>Object.keys(FILL_STATUS).some(k=>FILL_STATUS[k]===s);
+
 let FAIR_DATE_LIVE=FAIR_DATE;
 
 function normalise(list){
@@ -870,6 +898,9 @@ function normalise(list){
     x.due    = x.due||null;
     x.target = (x.target===undefined||x.target==='') ? null : x.target;
     x._i=i; x._status=statusOf(x); x._window=windowOf(x); x._away=daysAway(x.due);
+    x._sheetStatus = x.status;
+    if(x._window==='Sat Nov 7' && x.status!=='Done' && x.status!=='Blocked')
+      x.status = FILL_STATUS[x._status];
     return x;
   });
 }
@@ -951,32 +982,79 @@ function renderCountdown(){
   if(el) el.textContent=daysAway(FAIR_DATE_LIVE);
 }
 
+/* Dates already behind us fold into a closed "Already passed" section
+   at the bottom, so the top of the panel is only what's coming. It
+   remembers being opened across re-renders, and opens itself when the
+   page is filtered to a past date. */
+let pastOpen=false;
+
+/* In this panel only, every "Shift N" row for one job collapses into a
+   single line ("Gnome Hats shifts", "Direct parking shifts"). The
+   table below keeps its own expandable grouping. */
+function dlLine(dotCls,status,note,text,sub){
+  const right = '<span class="snote">'+esc(note)+'</span>'+
+    '<span class="spill '+(PILL_CLS[status]||'mixed')+'">'+esc(status)+'</span>';
+  return '<li><span class="dot '+dotCls+'"></span>'+
+    '<span class="sright">'+right+'</span>'+
+    '<span class="txt">'+esc(text)+' <span class="act">· '+esc(sub)+'</span></span></li>';
+}
+
+function dlBlock(d,list){
+  const n=daysAway(d);
+  const cls=n<0?'':(n<=14?'now':(n<=30?'soon':''));
+  const sorted=list.slice().sort((a,b)=>a.act.localeCompare(b.act)||a.task.localeCompare(b.task));
+  const lines=collapseShifts(sorted);
+  const items=lines.map(item=>{
+    if(!item._group) return dlLine(item._status,item.status,item.note,item.task,item.act);
+    const g=groupTotals(item);
+    const set=[]; item.members.forEach(m=>{ if(set.indexOf(m.status)<0) set.push(m.status); });
+    const status = set.every(isFillStatus) ? FILL_STATUS[g.status]
+                 : set.length===1 ? set[0] : 'Mixed';
+    const notes=[]; item.members.forEach(m=>{ if(m.note && notes.indexOf(m.note)<0) notes.push(m.note); });
+    const k=item.members.length, shifts=k+' shift'+(k===1?'':'s');
+    return dlLine(g.status,status,notes.join('; '),
+      (item.job||item.act)+' shifts', item.job ? item.act+' · '+shifts : shifts);
+  }).join('');
+  return '<div class="dl"><div class="head">'+
+    '<span class="date" style="cursor:pointer" data-date="'+d+'">'+fmtDate(d)+'</span>'+
+    '<span class="away '+cls+'">'+awayLabel(n)+'</span>'+
+    '<span style="margin-left:auto;font-size:11px;color:var(--ink-mid)">'+lines.length+' item'+(lines.length===1?'':'s')+'</span>'+
+    '</div><ul>'+items+'</ul></div>';
+}
+
 function renderDeadlines(){
+  const box=document.getElementById('deadlines');
   const byDate={};
   filtered().forEach(t=>{ if(!t.due) return; (byDate[t.due]=byDate[t.due]||[]).push(t); });
   const dates=Object.keys(byDate).sort();
-  if(!dates.length){
-    document.getElementById('deadlines').innerHTML=
-      '<div style="font-size:12.5px;color:var(--ink-mid);padding:6px 0">Nothing matches those filters.</div>';
-  } else
-  document.getElementById('deadlines').innerHTML=dates.map(d=>{
-    const n=daysAway(d);
-    const cls=n<=14?'now':(n<=30?'soon':'');
-    const items=byDate[d].sort((a,b)=>a.act.localeCompare(b.act)).map(t=>{
-      const right = '<span class="snote">'+esc(t.note)+'</span>'+
-        '<span class="spill '+STATUS_CLS[t.status]+'">'+esc(t.status)+'</span>';
-      return '<li><span class="dot '+t._status+'"></span>'+
-        '<span class="sright">'+right+'</span>'+
-        '<span class="txt">'+esc(t.task)+' <span class="act">· '+esc(t.act)+'</span></span></li>';
-    }).join('');
-    return '<div class="dl"><div class="head">'+
-      '<span class="date" style="cursor:pointer" data-date="'+d+'">'+fmtDate(d)+'</span>'+
-      '<span class="away '+cls+'">'+awayLabel(n)+'</span>'+
-      '<span style="margin-left:auto;font-size:11px;color:var(--ink-mid)">'+byDate[d].length+' task'+(byDate[d].length===1?'':'s')+'</span>'+
-      '</div><ul>'+items+'</ul></div>';
-  }).join('');
+  const ahead=dates.filter(d=>daysAway(d)>=0);
+  const past =dates.filter(d=>daysAway(d)<0).reverse();   // most recent first
 
-  document.querySelectorAll('#deadlines .date').forEach(el=>el.onclick=()=>{
+  if(!dates.length){
+    box.innerHTML='<div style="font-size:12.5px;color:var(--ink-mid);padding:6px 0">Nothing matches those filters.</div>';
+    return;
+  }
+
+  let html = ahead.length
+    ? ahead.map(d=>dlBlock(d,byDate[d])).join('')
+    : '<div style="font-size:12.5px;color:var(--ink-mid);padding:6px 0">Nothing else coming up for these filters.</div>';
+
+  if(past.length){
+    const nItems=past.reduce((s,d)=>s+collapseShifts(byDate[d]).length,0);
+    const open = pastOpen || (state._date && daysAway(state._date)<0);
+    html+='<details class="dlpast" id="dlpast"'+(open?' open':'')+'>'+
+      '<summary><span class="pchev"></span>Already passed'+
+      '<span class="pcount">'+past.length+' date'+(past.length===1?'':'s')+' · '+
+        nItems+' item'+(nItems===1?'':'s')+'</span></summary>'+
+      '<div class="dlpast-body">'+past.map(d=>dlBlock(d,byDate[d])).join('')+'</div>'+
+      '</details>';
+  }
+  box.innerHTML=html;
+
+  const det=document.getElementById('dlpast');
+  if(det) det.addEventListener('toggle',()=>{ pastOpen=det.open; });
+
+  box.querySelectorAll('.date').forEach(el=>el.onclick=()=>{
     state._date = state._date===el.dataset.date ? null : el.dataset.date;
     render();
   });
@@ -1370,7 +1448,7 @@ function groupTotals(g){
   return {have:have,need:need,untargeted:untargeted,names:names,status:status};
 }
 
-function sheetPill(v){ return '<span class="pill '+(STATUS_CLS[v]||'todo')+'">'+esc(v)+'</span>'; }
+function sheetPill(v){ return '<span class="pill '+(PILL_CLS[v]||'todo')+'">'+esc(v)+'</span>'; }
 
 function drawerBullets(t){
   const who=t.owners.length? t.owners.map(esc).join(', ')
@@ -1396,8 +1474,10 @@ function renderBody(){
         : '<span style="color:var(--notarget)">?</span>';
 
       // one sheet status for the group if they agree, otherwise Mixed
+      // Fair-day shifts that all carry a fill state take the group's overall coverage.
       const set=[]; item.members.forEach(m=>{ if(set.indexOf(m.status)<0) set.push(m.status); });
-      const sp = set.length===1 ? sheetPill(set[0])
+      const sp = set.every(isFillStatus) ? sheetPill(FILL_STATUS[g.status])
+               : set.length===1 ? sheetPill(set[0])
                                 : '<span class="pill mixed">Mixed</span>';
 
       let html='<tr class="'+(open?'expanded':'')+'">'+
